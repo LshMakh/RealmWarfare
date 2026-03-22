@@ -19,7 +19,7 @@ extends Node
 
 @export var powerup_scene: PackedScene
 @export var powerup_drop_chance: float = 0.05
-@export var powerup_data_list: Array[PickupData] = []
+var powerup_data_list: Array = []
 var _entity_layer: Node
 
 var _spawn_timer: float = 0.0
