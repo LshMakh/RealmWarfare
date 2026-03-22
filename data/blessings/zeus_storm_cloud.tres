@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BlessingData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/blessings/blessing_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+name = "Storm Cloud"
+description = "Summons a cloud that rains bolts on an area"
+pantheon = "greek"
+tier = 1
+effect_type = 1
+damage = 6
+cooldown = 4.0
+radius = 40.0
+duration = 2.0

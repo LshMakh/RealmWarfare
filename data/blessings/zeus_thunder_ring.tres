@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BlessingData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/blessings/blessing_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+name = "Thunder Ring"
+description = "Periodic AoE pulse around player"
+pantheon = "greek"
+tier = 1
+effect_type = 1
+damage = 8
+cooldown = 2.5
+radius = 60.0
+duration = 0.3
