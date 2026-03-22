@@ -5,6 +5,7 @@ extends CanvasLayer
 @onready var level_label: Label = $TopLeft/LevelLabel
 @onready var timer_label: Label = $TopLeft/TimerLabel
 @onready var kill_label: Label = $TopRight/KillLabel
+@onready var wave_label: Label = $TopRight/WaveLabel
 @onready var blessing_bar: HBoxContainer = $BlessingBar
 @onready var boss_bar_container: VBoxContainer = $BossBarContainer
 @onready var boss_name_label: Label = $BossBarContainer/BossNameLabel
@@ -20,6 +21,7 @@ func _ready() -> void:
 	GameEvents.blessing_chosen.connect(_on_blessing_chosen)
 	GameEvents.boss_spawned.connect(_on_boss_spawned)
 	GameEvents.boss_died.connect(_on_boss_died)
+	GameEvents.wave_started.connect(_on_wave_started)
 
 
 func _process(_delta: float) -> void:
@@ -98,3 +100,7 @@ func _on_boss_died(_pos: Vector2) -> void:
 func _on_boss_health_changed(new_health: int, max_health: int) -> void:
 	boss_hp_bar.max_value = max_health
 	boss_hp_bar.value = new_health
+
+
+func _on_wave_started(wave_number: int) -> void:
+	wave_label.text = "Wave %d" % wave_number
