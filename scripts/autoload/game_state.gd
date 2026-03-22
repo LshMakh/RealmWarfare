@@ -10,6 +10,8 @@ var current_wave: int = 0
 var active_blessings: Array[BlessingData] = []
 var is_run_active: bool = false
 var magnet_active: bool = false
+var boss_killed: bool = false
+var mini_boss_kills: int = 0
 
 # Ability charge
 var ability_charge: float = 0.0
@@ -23,6 +25,10 @@ var _run_start_ticks: int = 0
 
 # XP curve thresholds (level 1 -> 2 uses index 0, etc.)
 const XP_THRESHOLDS: Array[int] = [8, 12, 16, 22, 30, 40, 52, 66, 82, 100, 120, 142, 166, 192]
+
+
+func _ready() -> void:
+	GameEvents.boss_died.connect(_on_boss_died)
 
 
 func _process(_delta: float) -> void:
@@ -39,6 +45,8 @@ func start_new_run() -> void:
 	current_wave = 0
 	active_blessings.clear()
 	magnet_active = false
+	boss_killed = false
+	mini_boss_kills = 0
 	ability_charge = 0.0
 	is_run_active = true
 	_run_start_ticks = Time.get_ticks_msec()
@@ -51,6 +59,9 @@ func end_run() -> void:
 		"kills": kills,
 		"time": run_time,
 		"level": player_level,
+		"wave": current_wave,
+		"boss_killed": boss_killed,
+		"mini_boss_kills": mini_boss_kills,
 	}
 	GameEvents.run_ended.emit(result)
 
@@ -74,6 +85,10 @@ func use_ability() -> bool:
 	ability_charge = 0.0
 	GameEvents.active_ability_used.emit()
 	return true
+
+
+func _on_boss_died(_pos: Vector2) -> void:
+	boss_killed = true
 
 
 func _calculate_xp_threshold(level: int) -> int:

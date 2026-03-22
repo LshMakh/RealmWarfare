@@ -15,10 +15,14 @@ extends Node2D
 @onready var lightning_pool: ObjectPool = $EntityLayer/LightningPool
 @onready var crack_pool: ObjectPool = $EntityLayer/CrackPool
 @onready var active_ability: ActiveAbility = $Systems/ActiveAbility
+@onready var discovery_tracker: DiscoveryTracker = $Systems/DiscoveryTracker
 
 
 func _ready() -> void:
 	GameState.start_new_run()
+
+	# Wire up discovery tracker
+	discovery_tracker.set_favor_manager(FavorManager)
 
 	# Connect joystick to player
 	joystick.joystick_input.connect(player.set_joystick_direction)
@@ -114,5 +118,10 @@ func _ready() -> void:
 
 func _on_player_died() -> void:
 	GameState.end_run()
+	# Calculate personal bests and stash discovery data for post-run screen
+	discovery_tracker.check_personal_bests()
+	GameState.set_meta("last_run_discoveries", discovery_tracker.get_run_discoveries())
+	GameState.set_meta("last_run_personal_bests", discovery_tracker.get_run_personal_bests())
+	FavorManager.save_profile()
 	await get_tree().create_timer(1.0).timeout
 	get_tree().change_scene_to_file("res://scenes/run/post_run.tscn")

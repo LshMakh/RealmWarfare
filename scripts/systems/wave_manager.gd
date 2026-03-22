@@ -196,11 +196,18 @@ func _spawn_elite(enemy_name: String, hp_multiplier: float) -> void:
 		if health:
 			health.max_health = int(data.max_health * hp_multiplier)
 			health.current_health = health.max_health
+			# Track mini-boss kill
+			if not health.died.is_connected(_on_mini_boss_died):
+				health.died.connect(_on_mini_boss_died, CONNECT_ONE_SHOT)
 		# Scale up visually
 		enemy.scale = Vector2(1.5, 1.5)
 		# Position
 		enemy.global_position = player.global_position + Vector2(spawn_radius, 0).rotated(randf() * TAU)
 		_wave_enemies_remaining += 1
+
+
+func _on_mini_boss_died() -> void:
+	GameState.mini_boss_kills += 1
 
 
 # --- Boss ---

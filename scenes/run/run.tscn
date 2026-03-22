@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/run/run.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/realms/olympus.tscn" id="2"]
@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://scenes/hazards/lightning_strike.tscn" id="17"]
 [ext_resource type="PackedScene" path="res://scenes/hazards/tartarus_crack.tscn" id="18"]
 [ext_resource type="Script" path="res://scripts/systems/active_ability.gd" id="19"]
+[ext_resource type="Script" path="res://scripts/systems/discovery_tracker.gd" id="20"]
 
 [node name="Run" type="Node2D"]
 script = ExtResource("1")
@@ -76,6 +77,9 @@ script = ExtResource("16")
 
 [node name="ActiveAbility" type="Node" parent="Systems"]
 script = ExtResource("19")
+
+[node name="DiscoveryTracker" type="Node" parent="Systems"]
+script = ExtResource("20")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
