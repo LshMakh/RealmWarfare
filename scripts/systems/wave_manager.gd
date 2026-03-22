@@ -3,7 +3,6 @@ extends Node
 
 enum WaveState { IDLE, SPAWNING, ACTIVE, BREATHER, BOSS, DONE }
 
-@export var enemy_pool: ObjectPool
 @export var xp_pool: ObjectPool
 @export var player: CharacterBody2D
 @export var boss_data: EnemyData
@@ -16,6 +15,9 @@ enum WaveState { IDLE, SPAWNING, ACTIVE, BREATHER, BOSS, DONE }
 @export var powerup_drop_chance: float = 0.015
 var powerup_data_list: Array = []
 var _entity_layer: Node
+
+# Multi-pool support — set from run.gd via set_enemy_pool()
+var _enemy_pools: Dictionary = {}  # String -> ObjectPool
 
 # Wave table and enemy lookup — set from run.gd
 var wave_table: Array = []  # Array of WaveData
@@ -47,6 +49,10 @@ var _boss_trickle_timer: float = 0.0
 func _ready() -> void:
 	GameEvents.enemy_killed.connect(_on_enemy_killed)
 	GameEvents.boss_died.connect(_on_boss_died)
+
+
+func set_enemy_pool(enemy_name: String, pool: ObjectPool) -> void:
+	_enemy_pools[enemy_name] = pool
 
 
 func _process(delta: float) -> void:
@@ -82,9 +88,13 @@ func _start_next_wave() -> void:
 	GameState.current_wave = _current_wave_data.wave_number
 	GameEvents.wave_started.emit(_current_wave_data.wave_number)
 
+	# Check for mini-boss at this wave
+	_check_mini_boss(_current_wave_data.wave_number)
+
 	# Calculate spawn count and sub-wave batching
 	_total_spawn_count = randi_range(_current_wave_data.spawn_count_min, _current_wave_data.spawn_count_max)
-	_total_spawn_count = maxi(mini(_total_spawn_count, max_active_enemies - enemy_pool.active_count()), 1)
+	var total_active: int = _get_total_active_enemies()
+	_total_spawn_count = maxi(mini(_total_spawn_count, max_active_enemies - total_active), 1)
 	_sub_waves_remaining = maxi(_current_wave_data.sub_wave_count, 1)
 	_enemies_per_sub_wave = _total_spawn_count / _sub_waves_remaining
 	_sub_wave_remainder = _total_spawn_count % _sub_waves_remaining
@@ -120,15 +130,16 @@ func _process_active(delta: float) -> void:
 		_end_wave()
 		return
 
-	# Wave timeout: auto-advance, stragglers ignored
+	# Wave timeout: auto-advance, stragglers marked
 	if _wave_timer >= _current_wave_data.wave_timeout:
 		_wave_enemies_remaining = 0
 		_end_wave()
 
 
 func _end_wave() -> void:
+	_mark_current_enemies_as_stragglers()
 	GameEvents.wave_cleared.emit(_current_wave_data.wave_number)
-	_breather_timer = _current_wave_data.breather_duration
+	_breather_timer = _get_breather_duration(_current_wave_data.wave_number)
 	_state = WaveState.BREATHER
 
 
@@ -138,12 +149,72 @@ func _process_breather(delta: float) -> void:
 		_state = WaveState.IDLE  # IDLE triggers _start_next_wave on next frame
 
 
+# --- Breather scaling ---
+
+func _get_breather_duration(wave_number: int) -> float:
+	if wave_number <= 5:
+		return 2.5
+	if wave_number <= 10:
+		return 2.0
+	if wave_number <= 15:
+		return 1.5
+	return 1.0
+
+
+# --- Straggler despawn ---
+
+func _mark_current_enemies_as_stragglers() -> void:
+	for enemy: Node in get_tree().get_nodes_in_group("enemies"):
+		if enemy.has_method("mark_wave_advanced"):
+			enemy.mark_wave_advanced()
+
+
+# --- Mini-boss spawning ---
+
+func _check_mini_boss(wave_number: int) -> void:
+	if wave_number == 10:
+		_spawn_elite("minotaur", 2.0)
+	elif wave_number == 15:
+		_spawn_elite("cyclops", 2.0)
+
+
+func _spawn_elite(enemy_name: String, hp_multiplier: float) -> void:
+	var pool: ObjectPool = _enemy_pools.get(enemy_name) as ObjectPool
+	if not pool:
+		return
+	var data: EnemyData = enemy_lookup.get(enemy_name) as EnemyData
+	if not data:
+		return
+	var enemy: Node = pool.get_instance()
+	if not enemy:
+		return
+	if enemy is EnemyBase:
+		enemy.initialize(data, player)
+		# Override HP for elite
+		var health: HealthComponent = enemy.get_node_or_null("HealthComponent") as HealthComponent
+		if health:
+			health.max_health = int(data.max_health * hp_multiplier)
+			health.current_health = health.max_health
+		# Scale up visually
+		enemy.scale = Vector2(1.5, 1.5)
+		# Position
+		enemy.global_position = player.global_position + Vector2(spawn_radius, 0).rotated(randf() * TAU)
+		_wave_enemies_remaining += 1
+
+
+# --- Boss ---
+
 func _spawn_boss() -> void:
-	if not boss_data or not enemy_pool:
+	var skeleton_pool: ObjectPool = _enemy_pools.get("skeleton") as ObjectPool
+	if not boss_data or _enemy_pools.is_empty():
 		return
 	_boss_spawned = true
 	_boss_trickle_timer = boss_trickle_interval
-	var boss: Node = enemy_pool.get_instance()
+	# Use skeleton pool for boss (same base_enemy scene)
+	var pool: ObjectPool = skeleton_pool if skeleton_pool else _enemy_pools.values().front() as ObjectPool
+	if not pool:
+		return
+	var boss: Node = pool.get_instance()
 	if boss is EnemyBase:
 		var spawn_pos := _get_spawn_position(WaveData.SpawnPattern.RING, 0, 1)
 		boss.global_position = spawn_pos
@@ -161,11 +232,12 @@ func _process_boss(delta: float) -> void:
 	if _boss_trickle_timer <= 0.0:
 		_boss_trickle_timer = boss_trickle_interval
 		var skeleton_data: EnemyData = enemy_lookup.get("skeleton") as EnemyData
-		if skeleton_data and enemy_pool:
+		var skeleton_pool: ObjectPool = _enemy_pools.get("skeleton") as ObjectPool
+		if skeleton_data and skeleton_pool:
 			for i in range(boss_trickle_count):
-				if enemy_pool.active_count() >= max_active_enemies:
+				if _get_total_active_enemies() >= max_active_enemies:
 					break
-				var enemy: Node = enemy_pool.get_instance()
+				var enemy: Node = skeleton_pool.get_instance()
 				if enemy is EnemyBase:
 					var spawn_pos := _get_spawn_position(WaveData.SpawnPattern.RING, i, boss_trickle_count)
 					enemy.global_position = spawn_pos
@@ -175,30 +247,36 @@ func _process_boss(delta: float) -> void:
 # --- Spawning ---
 
 func _spawn_batch(count: int) -> void:
-	if not enemy_pool or not player or not _current_wave_data:
+	if _enemy_pools.is_empty() or not player or not _current_wave_data:
 		return
 
 	# Build weighted enemy list from composition
-	var enemy_list: Array[EnemyData] = _build_enemy_list()
+	var enemy_list: Array[Dictionary] = _build_enemy_list()
 	if enemy_list.is_empty():
 		return
 
-	var capped_count: int = mini(count, max_active_enemies - enemy_pool.active_count())
+	var total_active: int = _get_total_active_enemies()
+	var capped_count: int = mini(count, max_active_enemies - total_active)
 
 	for i in range(capped_count):
-		var enemy_instance: Node = enemy_pool.get_instance()
+		var entry: Dictionary = enemy_list[randi() % enemy_list.size()]
+		var data: EnemyData = entry["data"] as EnemyData
+		var enemy_name: String = entry["name"] as String
+		var pool: ObjectPool = _enemy_pools.get(enemy_name) as ObjectPool
+		if not pool:
+			continue
+		var enemy_instance: Node = pool.get_instance()
 		if enemy_instance is EnemyBase:
-			var data: EnemyData = enemy_list[randi() % enemy_list.size()]
 			var spawn_pos := _get_spawn_position(_current_wave_data.spawn_pattern, i, capped_count)
 			enemy_instance.global_position = spawn_pos
 			enemy_instance.initialize(data, player)
 			_wave_enemies_remaining += 1
 
 
-func _build_enemy_list() -> Array[EnemyData]:
+func _build_enemy_list() -> Array[Dictionary]:
 	# Convert composition dictionary {"skeleton": 4, "harpy": 2} into a weighted
-	# flat list [skeleton, skeleton, skeleton, skeleton, harpy, harpy]
-	var list: Array[EnemyData] = []
+	# flat list [{"name": "skeleton", "data": ...}, ...] for pool-aware spawning
+	var list: Array[Dictionary] = []
 	for key: String in _current_wave_data.enemy_composition:
 		var data: EnemyData = enemy_lookup.get(key) as EnemyData
 		if not data:
@@ -206,8 +284,21 @@ func _build_enemy_list() -> Array[EnemyData]:
 			continue
 		var weight: int = int(_current_wave_data.enemy_composition[key])
 		for _w in range(weight):
-			list.append(data)
+			list.append({"name": key, "data": data})
 	return list
+
+
+# --- Pool helpers ---
+
+func _get_total_active_enemies() -> int:
+	var total: int = 0
+	# Track unique pools to avoid double-counting shared pools
+	var counted_pools: Array[ObjectPool] = []
+	for pool: ObjectPool in _enemy_pools.values():
+		if pool not in counted_pools:
+			total += pool.active_count()
+			counted_pools.append(pool)
+	return total
 
 
 # --- Spawn patterns ---

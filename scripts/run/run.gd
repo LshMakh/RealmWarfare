@@ -26,7 +26,12 @@ func _ready() -> void:
 	hud.set_player_health(player.health_component)
 
 	# Wire up wave manager
-	wave_manager.enemy_pool = enemy_pool
+	wave_manager.set_enemy_pool("skeleton", enemy_pool)
+	wave_manager.set_enemy_pool("harpy", enemy_pool)
+	wave_manager.set_enemy_pool("minotaur", enemy_pool)
+	wave_manager.set_enemy_pool("cyclops", enemy_pool)
+	wave_manager.set_enemy_pool("satyr", enemy_pool)
+	wave_manager.set_enemy_pool("gorgon", enemy_pool)
 	wave_manager.xp_pool = xp_pool
 	wave_manager.player = player
 	wave_manager.enemy_lookup = {
@@ -34,6 +39,8 @@ func _ready() -> void:
 		"harpy": preload("res://data/enemies/harpy_data.tres"),
 		"minotaur": preload("res://data/enemies/minotaur_data.tres"),
 		"cyclops": preload("res://data/enemies/cyclops_data.tres"),
+		"satyr": preload("res://data/enemies/satyr_data.tres"),
+		"gorgon": preload("res://data/enemies/gorgon_data.tres"),
 	}
 	wave_manager.wave_table = [
 		preload("res://data/waves/olympus/wave_01.tres"),
@@ -44,6 +51,18 @@ func _ready() -> void:
 		preload("res://data/waves/olympus/wave_06.tres"),
 		preload("res://data/waves/olympus/wave_07.tres"),
 		preload("res://data/waves/olympus/wave_08.tres"),
+		preload("res://data/waves/olympus/wave_09.tres"),
+		preload("res://data/waves/olympus/wave_10.tres"),
+		preload("res://data/waves/olympus/wave_11.tres"),
+		preload("res://data/waves/olympus/wave_12.tres"),
+		preload("res://data/waves/olympus/wave_13.tres"),
+		preload("res://data/waves/olympus/wave_14.tres"),
+		preload("res://data/waves/olympus/wave_15.tres"),
+		preload("res://data/waves/olympus/wave_16.tres"),
+		preload("res://data/waves/olympus/wave_17.tres"),
+		preload("res://data/waves/olympus/wave_18.tres"),
+		preload("res://data/waves/olympus/wave_19.tres"),
+		preload("res://data/waves/olympus/wave_20.tres"),
 	]
 	wave_manager.boss_data = preload("res://data/enemies/cerberus_data.tres")
 	wave_manager.powerup_scene = preload("res://scenes/entities/pickups/powerup.tscn")

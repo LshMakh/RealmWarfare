@@ -5,11 +5,11 @@
 [resource]
 script = ExtResource("1")
 wave_number = 4
-enemy_composition = {"skeleton": 4, "harpy": 4, "minotaur": 4}
+enemy_composition = {"skeleton": 6, "harpy": 4}
 spawn_pattern = 0
-spawn_count_min = 12
-spawn_count_max = 14
+spawn_count_min = 9
+spawn_count_max = 12
 sub_wave_count = 3
-sub_wave_interval = 2.0
-wave_timeout = 22.0
-breather_duration = 2.0
+sub_wave_interval = 2.5
+wave_timeout = 45.0
+breather_duration = 2.5

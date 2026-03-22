@@ -11,5 +11,5 @@ enum SpawnPattern { RING, DIRECTIONAL, PINCER, AMBUSH }
 @export var spawn_count_max: int = 8
 @export var sub_wave_count: int = 3
 @export var sub_wave_interval: float = 2.0
-@export var wave_timeout: float = 30.0
+@export var wave_timeout: float = 45.0
 @export var breather_duration: float = 2.5
