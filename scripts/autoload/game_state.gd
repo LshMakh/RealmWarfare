@@ -6,6 +6,7 @@ var player_xp: int = 0
 var xp_to_next_level: int = 10
 var kills: int = 0
 var run_time: float = 0.0
+var current_wave: int = 0
 var active_blessings: Array[BlessingData] = []
 var is_run_active: bool = false
 var magnet_active: bool = false
@@ -17,6 +18,7 @@ func start_new_run() -> void:
 	xp_to_next_level = 10
 	kills = 0
 	run_time = 0.0
+	current_wave = 0
 	active_blessings.clear()
 	magnet_active = false
 	is_run_active = true

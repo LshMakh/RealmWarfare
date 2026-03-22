@@ -19,6 +19,10 @@ signal blessing_chosen(blessing: Resource)
 signal boss_spawned(enemy: Node2D)
 signal boss_died(position: Vector2)
 
+# Waves
+signal wave_started(wave_number: int)
+signal wave_cleared(wave_number: int)
+
 # Pickups
 signal powerup_collected(pickup_data: Resource, position: Vector2)
 
