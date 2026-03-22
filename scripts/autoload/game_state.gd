@@ -6,7 +6,7 @@ var player_xp: int = 0
 var xp_to_next_level: int = 10
 var kills: int = 0
 var run_time: float = 0.0
-var active_blessings: Array[Resource] = []
+var active_blessings: Array[BlessingData] = []
 var is_run_active: bool = false
 
 
