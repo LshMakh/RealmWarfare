@@ -1,10 +1,10 @@
 extends Label
 
 
-func show_number(pos: Vector2, amount: int) -> void:
+func show_number(pos: Vector2, amount: int, font_size: int = 8) -> void:
 	global_position = pos + Vector2(randf_range(-8, 8), -10)
 	text = str(amount)
-	add_theme_font_size_override("font_size", 12)
+	add_theme_font_size_override("font_size", font_size)
 	add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
 	z_index = 100
 
