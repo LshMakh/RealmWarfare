@@ -64,4 +64,4 @@ func _on_blessing_chosen(blessing: BlessingData) -> void:
 	if blessing.effect_type == BlessingData.EffectType.PROJECTILE:
 		_bonus_damage += blessing.damage
 		_bonus_projectiles += blessing.projectile_count - 1
-		_cooldown_reduction += 0.1
+		_cooldown_reduction += 0.15
