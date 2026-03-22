@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WaveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/waves/wave_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+wave_number = 8
+enemy_composition = {"minotaur": 6, "cyclops": 6, "harpy": 4, "skeleton": 4}
+spawn_pattern = 2
+spawn_count_min = 20
+spawn_count_max = 22
+sub_wave_count = 5
+sub_wave_interval = 1.0
+wave_timeout = 15.0
+breather_duration = 2.0
