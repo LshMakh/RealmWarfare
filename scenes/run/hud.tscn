@@ -1,6 +1,34 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="hp_fill"]
+bg_color = Color(0.8, 0.15, 0.15, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="hp_bg"]
+bg_color = Color(0.2, 0.08, 0.08, 0.8)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="xp_fill"]
+bg_color = Color(0.2, 0.4, 0.9, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="xp_bg"]
+bg_color = Color(0.08, 0.1, 0.2, 0.8)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [node name="HUD" type="CanvasLayer"]
 layer = 10
@@ -11,21 +39,35 @@ anchors_preset = 0
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 160.0
-offset_bottom = 60.0
+offset_bottom = 70.0
+theme_override_constants/separation = 2
 
 [node name="HPBar" type="ProgressBar" parent="TopLeft"]
 layout_mode = 2
-custom_minimum_size = Vector2(120, 12)
+custom_minimum_size = Vector2(140, 14)
+theme_override_styles/fill = SubResource("hp_fill")
+theme_override_styles/background = SubResource("hp_bg")
 max_value = 100.0
 value = 100.0
 show_percentage = false
 
+[node name="XPBar" type="ProgressBar" parent="TopLeft"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 8)
+theme_override_styles/fill = SubResource("xp_fill")
+theme_override_styles/background = SubResource("xp_bg")
+max_value = 10.0
+value = 0.0
+show_percentage = false
+
 [node name="LevelLabel" type="Label" parent="TopLeft"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 11
 text = "Lv. 1"
 
 [node name="TimerLabel" type="Label" parent="TopLeft"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 11
 text = "0:00"
 
 [node name="TopRight" type="VBoxContainer" parent="."]
@@ -40,4 +82,5 @@ offset_bottom = 40.0
 [node name="KillLabel" type="Label" parent="TopRight"]
 layout_mode = 2
 horizontal_alignment = 2
+theme_override_font_sizes/font_size = 11
 text = "Kills: 0"

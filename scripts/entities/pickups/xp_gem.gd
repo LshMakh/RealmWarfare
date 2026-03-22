@@ -30,15 +30,21 @@ func _physics_process(delta: float) -> void:
 	if not _magnet_target:
 		return
 	var dist := global_position.distance_to(_magnet_target.global_position)
-	if dist < 50.0:
+	if dist < 80.0:
 		var direction := global_position.direction_to(_magnet_target.global_position)
-		global_position += direction * _magnet_speed * delta
+		var pull_speed := _magnet_speed * (1.0 + (80.0 - dist) / 80.0 * 2.0)
+		global_position += direction * pull_speed * delta
 
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		GameEvents.xp_collected.emit(value)
-		if pool:
-			pool.release(self)
-		else:
-			queue_free()
+		set_deferred("monitoring", false)
+		call_deferred("_release")
+
+
+func _release() -> void:
+	if pool:
+		pool.release(self)
+	else:
+		queue_free()

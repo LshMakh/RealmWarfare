@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 @onready var hp_bar: ProgressBar = $TopLeft/HPBar
+@onready var xp_bar: ProgressBar = $TopLeft/XPBar
 @onready var level_label: Label = $TopLeft/LevelLabel
 @onready var timer_label: Label = $TopLeft/TimerLabel
 @onready var kill_label: Label = $TopRight/KillLabel
@@ -9,6 +10,7 @@ extends CanvasLayer
 func _ready() -> void:
 	GameEvents.player_damaged.connect(_on_player_damaged)
 	GameEvents.level_up.connect(_on_level_up)
+	GameEvents.xp_collected.connect(_on_xp_collected)
 
 
 func _process(_delta: float) -> void:
@@ -17,6 +19,8 @@ func _process(_delta: float) -> void:
 		var secs := int(GameState.run_time) % 60
 		timer_label.text = "%d:%02d" % [mins, secs]
 		kill_label.text = "Kills: %d" % GameState.kills
+		xp_bar.max_value = GameState.xp_to_next_level
+		xp_bar.value = GameState.player_xp
 
 
 func set_player_health(health_component: HealthComponent) -> void:
@@ -34,5 +38,12 @@ func _on_player_damaged(_amount: int) -> void:
 	pass
 
 
+func _on_xp_collected(_amount: int) -> void:
+	xp_bar.max_value = GameState.xp_to_next_level
+	xp_bar.value = GameState.player_xp
+
+
 func _on_level_up(new_level: int) -> void:
 	level_label.text = "Lv. %d" % new_level
+	xp_bar.value = 0
+	xp_bar.max_value = GameState.xp_to_next_level

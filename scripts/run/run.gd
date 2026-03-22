@@ -36,6 +36,7 @@ func _ready() -> void:
 	auto_attack.projectile_pool = projectile_pool
 
 	# Wire up blessing manager
+	blessing_manager.set_player(player)
 	blessing_manager.available_blessings = [
 		preload("res://data/blessings/zeus_lightning_bolt.tres"),
 		preload("res://data/blessings/zeus_thunder_ring.tres"),
@@ -53,5 +54,5 @@ func _ready() -> void:
 
 func _on_player_died() -> void:
 	GameState.end_run()
-	await get_tree().create_timer(2.0).timeout
-	get_tree().reload_current_scene()
+	await get_tree().create_timer(1.0).timeout
+	get_tree().change_scene_to_file("res://scenes/run/post_run.tscn")

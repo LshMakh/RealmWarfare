@@ -35,3 +35,10 @@ func _on_died() -> void:
 
 func _on_hit(_hitbox: HitboxComponent) -> void:
 	GameEvents.player_damaged.emit(_hitbox.damage)
+	_flash_hit()
+
+
+func _flash_hit() -> void:
+	var tween := create_tween()
+	tween.tween_property(sprite, "modulate", Color(1.0, 0.3, 0.3, 1.0), 0.05)
+	tween.tween_property(sprite, "modulate", Color.WHITE, 0.1)

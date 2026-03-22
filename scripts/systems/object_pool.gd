@@ -19,6 +19,7 @@ func _create_instance() -> Node:
 	instance.visible = false
 	instance.set_process(false)
 	instance.set_physics_process(false)
+	_set_collisions_disabled(instance, true)
 	if instance.has_method("set_pool"):
 		instance.set_pool(self)
 	_available.append(instance)
@@ -36,6 +37,7 @@ func get_instance() -> Node:
 	instance.visible = true
 	instance.set_process(true)
 	instance.set_physics_process(true)
+	_set_collisions_disabled(instance, false)
 	return instance
 
 
@@ -43,9 +45,21 @@ func release(instance: Node) -> void:
 	instance.visible = false
 	instance.set_process(false)
 	instance.set_physics_process(false)
+	_set_collisions_disabled(instance, true)
 	if instance.has_method("reset"):
 		instance.reset()
 	_available.append(instance)
+
+
+func _set_collisions_disabled(node: Node, disabled: bool) -> void:
+	if node is Area2D:
+		node.set_deferred("monitorable", not disabled)
+		node.set_deferred("monitoring", not disabled)
+	for child in node.get_children():
+		if child is CollisionShape2D:
+			child.set_deferred("disabled", disabled)
+		if child.get_child_count() > 0:
+			_set_collisions_disabled(child, disabled)
 
 
 func active_count() -> int:
