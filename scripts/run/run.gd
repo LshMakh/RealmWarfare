@@ -11,6 +11,9 @@ extends Node2D
 @onready var blessing_manager: BlessingManager = $Systems/BlessingManager
 @onready var level_up_ui: CanvasLayer = $UILayer/LevelUpUI
 @onready var column_manager: ColumnManager = $ColumnManager
+@onready var hazard_manager: HazardManager = $Systems/HazardManager
+@onready var lightning_pool: ObjectPool = $EntityLayer/LightningPool
+@onready var crack_pool: ObjectPool = $EntityLayer/CrackPool
 
 
 func _ready() -> void:
@@ -68,6 +71,10 @@ func _ready() -> void:
 		preload("res://data/blessings/zeus_chain_lightning.tres"),
 		preload("res://data/blessings/zeus_aegis_barrier.tres"),
 	]
+
+	# Wire up hazard manager
+	hazard_manager.player = player
+	hazard_manager.set_pools(lightning_pool, crack_pool)
 
 	# Wire up column manager
 	column_manager.player = player

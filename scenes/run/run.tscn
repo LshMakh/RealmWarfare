@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/run/run.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/realms/olympus.tscn" id="2"]
@@ -15,6 +15,9 @@
 [ext_resource type="PackedScene" path="res://scenes/run/hud.tscn" id="13"]
 [ext_resource type="PackedScene" path="res://scenes/run/level_up_ui.tscn" id="14"]
 [ext_resource type="Script" path="res://scripts/systems/column_manager.gd" id="15"]
+[ext_resource type="Script" path="res://scripts/systems/hazard_manager.gd" id="16"]
+[ext_resource type="PackedScene" path="res://scenes/hazards/lightning_strike.tscn" id="17"]
+[ext_resource type="PackedScene" path="res://scenes/hazards/tartarus_crack.tscn" id="18"]
 
 [node name="Run" type="Node2D"]
 script = ExtResource("1")
@@ -46,6 +49,16 @@ script = ExtResource("5")
 pooled_scene = ExtResource("8")
 pool_size = 100
 
+[node name="LightningPool" type="Node" parent="EntityLayer"]
+script = ExtResource("5")
+pooled_scene = ExtResource("17")
+pool_size = 10
+
+[node name="CrackPool" type="Node" parent="EntityLayer"]
+script = ExtResource("5")
+pooled_scene = ExtResource("18")
+pool_size = 8
+
 [node name="Systems" type="Node" parent="."]
 
 [node name="WaveManager" type="Node" parent="Systems"]
@@ -56,6 +69,9 @@ script = ExtResource("10")
 
 [node name="XPSystem" type="Node" parent="Systems"]
 script = ExtResource("11")
+
+[node name="HazardManager" type="Node" parent="Systems"]
+script = ExtResource("16")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
