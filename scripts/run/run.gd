@@ -59,6 +59,7 @@ func _ready() -> void:
 
 	# Wire up blessing manager
 	blessing_manager.set_player(player)
+	blessing_manager.set_projectile_pool(projectile_pool)
 	blessing_manager.available_blessings = [
 		preload("res://data/blessings/zeus_lightning_bolt.tres"),
 		preload("res://data/blessings/zeus_thunder_ring.tres"),

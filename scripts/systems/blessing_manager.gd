@@ -10,6 +10,7 @@ var _blessing_data: Dictionary = {}     # StringName -> BlessingData
 var _blessing_timers: Dictionary = {}   # StringName -> float (cooldown countdown)
 
 var _player: Node2D
+var _projectile_pool: ObjectPool = null
 
 # Orbital state (Aegis Barrier) — visual nodes that orbit the player
 var _orbitals: Array[Dictionary] = []  # [{node, angle, hit_timer}, ...]
@@ -23,6 +24,10 @@ func _ready() -> void:
 
 func set_player(player: Node2D) -> void:
 	_player = player
+
+
+func set_projectile_pool(pool: ObjectPool) -> void:
+	_projectile_pool = pool
 
 
 func _on_run_started() -> void:
@@ -43,6 +48,7 @@ func _process(delta: float) -> void:
 
 	_process_thunder_rings(delta)
 	_process_storm_clouds(delta)
+	_process_chain_lightning(delta)
 	_process_orbitals(delta)
 
 
@@ -164,6 +170,62 @@ func _fire_storm_cloud(data: BlessingData, level: int) -> void:
 		_player.get_parent().add_child(cloud)
 
 
+# --- Chain Lightning (PROJECTILE, independent cooldown, fan of bolts) ---
+
+func _process_chain_lightning(delta: float) -> void:
+	var bid: StringName = &"zeus_chain_lightning"
+	if not _blessing_levels.has(bid):
+		return
+	var level: int = _blessing_levels[bid]
+	var data: BlessingData = _blessing_data[bid]
+	var cooldown: float = data.get_stat(level, "cooldown", 1.2) as float
+
+	_blessing_timers[bid] = _blessing_timers.get(bid, 0.0) - delta
+	if _blessing_timers[bid] <= 0.0:
+		_blessing_timers[bid] = cooldown
+		_fire_chain_lightning(data, level)
+
+
+func _fire_chain_lightning(data: BlessingData, level: int) -> void:
+	if not _player or not _projectile_pool:
+		return
+	var bolts: int = data.get_stat(level, "bolts", 3) as int
+	var spread: float = data.get_stat(level, "spread_degrees", 30.0) as float
+	var damage: int = data.get_stat(level, "damage", 7) as int
+
+	# Find nearest enemy within range
+	var target: Node2D = _find_nearest_enemy()
+	if not target:
+		return
+
+	var base_dir: Vector2 = _player.global_position.direction_to(target.global_position)
+	var half_spread: float = deg_to_rad(spread / 2.0)
+
+	for i in bolts:
+		var t: float = 0.5
+		if bolts > 1:
+			t = float(i) / float(bolts - 1)  # 0.0 to 1.0
+		var angle: float = lerpf(-half_spread, half_spread, t)
+		var dir: Vector2 = base_dir.rotated(angle)
+
+		var proj: Node = _projectile_pool.get_instance()
+		if proj and proj.has_method("activate"):
+			proj.activate(_player.global_position, dir, damage)
+
+
+func _find_nearest_enemy() -> Node2D:
+	var enemies: Array[Node] = get_tree().get_nodes_in_group("enemies")
+	var nearest: Node2D = null
+	var nearest_dist: float = 300.0
+	for enemy: Node in enemies:
+		if enemy is Node2D and enemy.visible:
+			var dist: float = _player.global_position.distance_to((enemy as Node2D).global_position)
+			if dist < nearest_dist:
+				nearest_dist = dist
+				nearest = enemy as Node2D
+	return nearest
+
+
 # --- Orbital (Aegis Barrier, rotating around player) ---
 
 func _process_orbitals(delta: float) -> void:
@@ -176,6 +238,12 @@ func _process_orbitals(delta: float) -> void:
 	var orbit_radius: float = data.get_stat(level, "orbit_radius", 45.0) as float
 	var hit_cooldown: float = data.get_stat(level, "hit_cooldown", 1.0) as float
 	var damage: int = data.get_stat(level, "damage", 6) as int
+	var do_stun: bool = data.get_stat(level, "stun", false) as bool
+	var stun_duration: float = data.get_stat(level, "stun_duration", 0.0) as float
+	var do_arcs: bool = data.get_stat(level, "arcs", false) as bool
+	# TODO: deflect — when data.get_stat(level, "deflect", false) is true,
+	# shields should reflect enemy projectiles (javelins, boulders) on overlap.
+	# Requires collision layer changes and Area2D overlap detection on each shield node.
 
 	for entry: Dictionary in _orbitals:
 		entry["angle"] = fmod(entry["angle"] + delta * rotation_speed, TAU)
@@ -183,16 +251,28 @@ func _process_orbitals(delta: float) -> void:
 		if is_instance_valid(node):
 			var orbit_pos := Vector2(cos(entry["angle"]), sin(entry["angle"])) * orbit_radius
 			node.global_position = _player.global_position + orbit_pos
+			# Update arc drawing state on the orbital visual
+			if node is AegisOrbitalEffect:
+				(node as AegisOrbitalEffect).draw_arcs = do_arcs
 
 		# Periodic hit check
 		entry["hit_timer"] = entry["hit_timer"] - delta
 		if entry["hit_timer"] <= 0.0:
 			entry["hit_timer"] = hit_cooldown
 			var hit_pos: Vector2 = _player.global_position + Vector2(cos(entry["angle"]), sin(entry["angle"])) * orbit_radius
-			_orbital_hit(damage, hit_pos)
+			_orbital_hit(damage, hit_pos, do_stun, stun_duration)
+
+	# Set arc target to next adjacent orbital in ring (wraps around)
+	if do_arcs and _orbitals.size() >= 2:
+		var count: int = _orbitals.size()
+		for idx in range(count):
+			var node: Node2D = _orbitals[idx]["node"]
+			var next_node: Node2D = _orbitals[(idx + 1) % count]["node"]
+			if is_instance_valid(node) and node is AegisOrbitalEffect and is_instance_valid(next_node):
+				(node as AegisOrbitalEffect).arc_next_pos = next_node.global_position
 
 
-func _orbital_hit(damage: int, hit_pos: Vector2) -> void:
+func _orbital_hit(damage: int, hit_pos: Vector2, do_stun: bool = false, stun_duration: float = 0.0) -> void:
 	var hit_radius: float = 20.0
 	var enemies := get_tree().get_nodes_in_group("enemies")
 	for enemy: Node2D in enemies:
@@ -209,6 +289,9 @@ func _orbital_hit(damage: int, hit_pos: Vector2) -> void:
 					if is_instance_valid(enemy):
 						enemy.modulate = orig_mod
 				)
+			# Apply stun at Lv4+
+			if do_stun and stun_duration > 0.0 and enemy.has_method("apply_stun"):
+				enemy.apply_stun(stun_duration)
 			# Spawn hit spark at contact point
 			_spawn_orbital_hit_spark(hit_pos)
 
@@ -636,6 +719,8 @@ class AegisOrbitalEffect extends Node2D:
 	var _pulse_time: float = 0.0
 	var _trail: Array[Vector2] = []
 	var _trail_timer: float = 0.0
+	var draw_arcs: bool = false
+	var arc_next_pos: Vector2 = Vector2.ZERO  # Global position of next orbital in ring
 	const TRAIL_LENGTH: int = 6
 	const TRAIL_INTERVAL: float = 0.03
 
@@ -659,6 +744,19 @@ class AegisOrbitalEffect extends Node2D:
 		draw_circle(Vector2.ZERO, 8.0, Color(0.6, 0.8, 1.0, 0.9 * pulse))
 		# Center
 		draw_circle(Vector2.ZERO, 4.0, Color(0.85, 0.92, 1.0, pulse))
+
+		# Lightning arc to next adjacent shield (Lv5)
+		if draw_arcs and arc_next_pos != Vector2.ZERO:
+			var local_target: Vector2 = arc_next_pos - global_position
+			var arc_alpha: float = 0.4 + 0.2 * sin(_pulse_time * 1.3)
+			var glow_color := Color(0.5, 0.7, 1.0, arc_alpha * 0.4)
+			var core_color := Color(0.8, 0.9, 1.0, arc_alpha)
+			# Jagged two-segment arc with animated midpoint
+			var mid: Vector2 = local_target * 0.5 + Vector2(sin(_pulse_time * 2.0) * 4.0, cos(_pulse_time * 2.0) * 4.0)
+			draw_line(Vector2.ZERO, mid, glow_color, 3.0)
+			draw_line(mid, local_target, glow_color, 3.0)
+			draw_line(Vector2.ZERO, mid, core_color, 1.5)
+			draw_line(mid, local_target, core_color, 1.5)
 
 
 # Hit spark effect when orbital strikes an enemy
