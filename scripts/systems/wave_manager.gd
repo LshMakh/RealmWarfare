@@ -53,13 +53,13 @@ func _spawn_wave() -> void:
 	if not enemy_pool or not player:
 		return
 
-	var count := min(
+	var count: int = int(min(
 		_enemies_for_current_time(),
 		max_active_enemies - enemy_pool.active_count()
-	)
+	))
 
 	for i in range(count):
-		var enemy_instance := enemy_pool.get_instance()
+		var enemy_instance: Node = enemy_pool.get_instance()
 		if enemy_instance is EnemyBase:
 			var data: EnemyData = enemy_types[randi() % enemy_types.size()]
 			var spawn_pos := _random_spawn_position()
@@ -71,7 +71,7 @@ func _spawn_boss() -> void:
 	if not boss_data or not enemy_pool:
 		return
 	_boss_spawned = true
-	var boss := enemy_pool.get_instance()
+	var boss: Node = enemy_pool.get_instance()
 	if boss is EnemyBase:
 		var spawn_pos := _random_spawn_position()
 		boss.global_position = spawn_pos
@@ -94,6 +94,6 @@ func _random_spawn_position() -> Vector2:
 func _on_enemy_killed(pos: Vector2) -> void:
 	GameState.kills += 1
 	if xp_pool:
-		var gem := xp_pool.get_instance()
+		var gem: Node = xp_pool.get_instance()
 		if gem and gem.has_method("activate"):
 			gem.activate(pos, 1, player)

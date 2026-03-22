@@ -39,7 +39,7 @@ func _physics_process(delta: float) -> void:
 
 func _on_area_entered(area: Area2D) -> void:
 	if area is HurtboxComponent and area.get_parent().is_in_group("enemies"):
-		var enemy := area.get_parent()
+		var enemy: Node = area.get_parent()
 		if enemy.has_node("HealthComponent"):
 			enemy.get_node("HealthComponent").take_damage(damage)
 		_release()

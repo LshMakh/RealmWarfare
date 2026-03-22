@@ -40,7 +40,7 @@ func _find_nearest_enemy() -> Node2D:
 func _fire_at(target: Node2D) -> void:
 	if not projectile_pool:
 		return
-	var proj := projectile_pool.get_instance()
+	var proj: Node = projectile_pool.get_instance()
 	if proj and proj.has_method("activate"):
 		var direction := _player.global_position.direction_to(target.global_position)
 		proj.activate(_player.global_position, direction, base_damage)

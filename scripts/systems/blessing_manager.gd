@@ -13,7 +13,7 @@ func _ready() -> void:
 
 
 func _on_level_up(_new_level: int) -> void:
-	var choices := _pick_random_choices()
+	var choices: Array = _pick_random_choices()
 	GameEvents.show_level_up_ui.emit(choices)
 
 
@@ -24,10 +24,10 @@ func _on_blessing_chosen(blessing: BlessingData) -> void:
 
 
 func _pick_random_choices() -> Array:
-	var pool := available_blessings.duplicate()
+	var pool: Array = available_blessings.duplicate()
 	var choices: Array = []
-	for i in range(min(choices_per_level, pool.size())):
-		var idx := randi() % pool.size()
+	for i in range(mini(choices_per_level, pool.size())):
+		var idx: int = randi() % pool.size()
 		choices.append(pool[idx])
 		pool.remove_at(idx)
 	return choices

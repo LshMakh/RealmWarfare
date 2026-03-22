@@ -23,7 +23,7 @@ func start_new_run() -> void:
 
 func end_run() -> void:
 	is_run_active = false
-	var result := {
+	var result: Dictionary = {
 		"kills": kills,
 		"time": run_time,
 		"level": player_level,
