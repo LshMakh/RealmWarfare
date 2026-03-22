@@ -65,6 +65,7 @@ func _ready() -> void:
 		preload("res://data/waves/olympus/wave_20.tres"),
 	]
 	wave_manager.boss_data = preload("res://data/enemies/cerberus_data.tres")
+	wave_manager.crack_pool = crack_pool
 	wave_manager.powerup_scene = preload("res://scenes/entities/pickups/powerup.tscn")
 	wave_manager.powerup_data_list = [
 		preload("res://data/pickups/ambrosia.tres"),

@@ -93,6 +93,7 @@ func reset() -> void:
 	modulate = Color.WHITE
 	scale = Vector2.ONE
 	sprite.modulate = Color.WHITE
+	sprite.scale = Vector2.ONE
 	# Reset knockback
 	_knockback_velocity = Vector2.ZERO
 	# Reset stun
@@ -208,6 +209,18 @@ func set_projectile_pools(javelin_pool: ObjectPool, boulder_pool: ObjectPool) ->
 		_active_behavior.set_boulder_pool(boulder_pool)
 
 
+func set_boss_pools(skeleton: ObjectPool, harpy: ObjectPool, minotaur: ObjectPool, crack: ObjectPool) -> void:
+	if _active_behavior and _active_behavior.has_method("set_pools"):
+		_active_behavior.set_pools(skeleton, harpy, minotaur)
+	if _active_behavior and _active_behavior.has_method("set_crack_pool"):
+		_active_behavior.set_crack_pool(crack)
+
+
+func set_boss_enemy_data(skeleton: EnemyData, harpy: EnemyData, minotaur: EnemyData) -> void:
+	if _active_behavior and _active_behavior.has_method("set_enemy_data"):
+		_active_behavior.set_enemy_data(skeleton, harpy, minotaur)
+
+
 # --- Behavior wiring ---
 
 func _setup_behavior() -> void:
@@ -217,9 +230,6 @@ func _setup_behavior() -> void:
 		state.set_physics_process(false)
 
 	var bt: int = data.behavior_type
-	if bt == EnemyData.BehaviorType.BOSS:
-		_active_behavior = null
-		return  # Boss uses its own script (Task 13)
 
 	if not _behavior_cache.has(bt):
 		var state: Node = _create_behavior(bt)
@@ -251,6 +261,8 @@ func _create_behavior(bt: int) -> Node:
 			return EnemyKiterState.new()
 		EnemyData.BehaviorType.ZONER:
 			return EnemyZonerState.new()
+		EnemyData.BehaviorType.BOSS:
+			return CerberusBoss.new()
 	return null
 
 
@@ -310,8 +322,10 @@ func _on_died() -> void:
 	hurtbox.set_deferred("monitoring", false)
 	hitbox.set_deferred("monitorable", false)
 	velocity = Vector2.ZERO
-	# Play death effect then release
-	call_deferred("_play_death_effect")
+	if data and data.is_boss:
+		call_deferred("_play_boss_death_sequence")
+	else:
+		call_deferred("_play_death_effect")
 
 
 func _play_death_effect() -> void:
@@ -340,6 +354,44 @@ func _spawn_death_particles() -> void:
 		tween.tween_property(particle, "global_position", particle.global_position + dir * 30.0, 0.3)
 		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.3)
 		tween.tween_callback(particle.queue_free)
+
+
+func _play_boss_death_sequence() -> void:
+	GameEvents.enemy_killed.emit(global_position, data.xp_reward)
+	# Hitstop for dramatic pause
+	if has_node("/root/JuiceManager"):
+		get_node("/root/JuiceManager").hitstop(150)
+	# Dramatic collapse tween
+	var tween := create_tween()
+	tween.tween_interval(0.2)  # Wait for hitstop to finish
+	# Flash white
+	tween.tween_property(sprite, "modulate", Color(3.0, 3.0, 3.0, 1.0), 0.1)
+	tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
+	# Collapse animation
+	tween.tween_property(sprite, "scale", Vector2(2.0, 0.5), 0.5)
+	tween.tween_property(sprite, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(_boss_death_cleanup)
+
+
+func _boss_death_cleanup() -> void:
+	var death_pos: Vector2 = global_position
+	GameEvents.boss_died.emit(death_pos)
+	# Stun all remaining enemies briefly
+	for enemy: Node in get_tree().get_nodes_in_group("enemies"):
+		if enemy != self and enemy is Node2D and enemy.visible and enemy.has_method("apply_stun"):
+			enemy.apply_stun(1.0)
+	# After 1s, kill all remaining visible enemies
+	get_tree().create_timer(1.0).timeout.connect(_chain_kill_enemies)
+	_handle_death()
+
+
+func _chain_kill_enemies() -> void:
+	for enemy: Node in get_tree().get_nodes_in_group("enemies"):
+		if not enemy is Node2D or not (enemy as Node2D).visible:
+			continue
+		var health: Node = enemy.get_node_or_null("HealthComponent")
+		if health and health.has_method("take_damage"):
+			health.take_damage(99999)
 
 
 func _handle_death() -> void:

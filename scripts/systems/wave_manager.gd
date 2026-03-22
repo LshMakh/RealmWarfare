@@ -10,6 +10,7 @@ enum WaveState { IDLE, SPAWNING, ACTIVE, BREATHER, BOSS, DONE }
 @export var max_active_enemies: int = 100
 @export var boss_trickle_interval: float = 4.0
 @export var boss_trickle_count: int = 2
+@export var crack_pool: ObjectPool
 
 @export var powerup_scene: PackedScene
 @export var powerup_drop_chance: float = 0.015
@@ -219,6 +220,23 @@ func _spawn_boss() -> void:
 		var spawn_pos := _get_spawn_position(WaveData.SpawnPattern.RING, 0, 1)
 		boss.global_position = spawn_pos
 		boss.initialize(boss_data, player)
+		# Wire boss behavior pools and enemy data for summoning
+		var harpy_pool: ObjectPool = _enemy_pools.get("harpy") as ObjectPool
+		var minotaur_pool: ObjectPool = _enemy_pools.get("minotaur") as ObjectPool
+		boss.set_boss_pools(
+			skeleton_pool if skeleton_pool else null,
+			harpy_pool if harpy_pool else null,
+			minotaur_pool if minotaur_pool else null,
+			crack_pool if crack_pool else null,
+		)
+		var skel_data: EnemyData = enemy_lookup.get("skeleton") as EnemyData
+		var harpy_data: EnemyData = enemy_lookup.get("harpy") as EnemyData
+		var mino_data: EnemyData = enemy_lookup.get("minotaur") as EnemyData
+		boss.set_boss_enemy_data(
+			skel_data if skel_data else null,
+			harpy_data if harpy_data else null,
+			mino_data if mino_data else null,
+		)
 		GameEvents.boss_spawned.emit(boss)
 	_state = WaveState.BOSS
 
