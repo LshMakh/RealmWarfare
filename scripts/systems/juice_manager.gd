@@ -1,4 +1,3 @@
-class_name JuiceManager
 extends Node
 
 var _last_slowmo_ticks: int = 0

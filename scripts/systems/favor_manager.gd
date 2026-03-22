@@ -1,4 +1,3 @@
-class_name FavorManager
 extends Node
 
 const SAVE_PATH: String = "user://player_profile.json"
