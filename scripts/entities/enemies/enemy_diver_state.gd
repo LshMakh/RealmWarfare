@@ -20,7 +20,7 @@ const COOLDOWN_DURATION: float = 3.0
 
 
 func enter() -> void:
-	_enemy = owner as EnemyBase
+	_enemy = get_parent() as EnemyBase
 	_phase = Phase.APPROACH
 	_phase_timer = 0.0
 

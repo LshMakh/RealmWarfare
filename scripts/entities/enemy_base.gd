@@ -5,6 +5,8 @@ var data: EnemyData
 var pool: ObjectPool
 var _player: Node2D = null
 var _dying: bool = false
+var _active_behavior: Node = null
+var _behavior_cache: Dictionary = {}  # BehaviorType int -> Node
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var health_component: HealthComponent = $HealthComponent
@@ -79,6 +81,8 @@ func initialize(enemy_data: EnemyData, player: Node2D) -> void:
 	# Reset cluster
 	cluster_id = -1
 	is_cluster_leader = false
+	# Attach / activate behavior node
+	_setup_behavior()
 
 
 func reset() -> void:
@@ -100,6 +104,11 @@ func reset() -> void:
 	# Reset cluster
 	cluster_id = -1
 	is_cluster_leader = false
+	# Deactivate all cached behaviors (cached nodes stay for reuse)
+	for state: Node in _behavior_cache.values():
+		state.set_process(false)
+		state.set_physics_process(false)
+	_active_behavior = null
 
 
 # --- Physics ---
@@ -130,10 +139,9 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# Behavior update (delegated to child node)
-	var behavior: Node = get_node_or_null("BehaviorState")
-	if behavior and behavior.has_method("physics_update"):
-		behavior.physics_update(delta)
+	# Behavior update (delegated to cached child node)
+	if _active_behavior and _active_behavior.has_method("physics_update"):
+		_active_behavior.physics_update(delta)
 
 	# Sprite flip
 	if velocity.x != 0:
@@ -191,6 +199,52 @@ func move_toward_player(speed_override: float = -1.0) -> void:
 
 func get_player() -> Node2D:
 	return _player
+
+
+# --- Behavior wiring ---
+
+func _setup_behavior() -> void:
+	# Deactivate all cached behaviors
+	for state: Node in _behavior_cache.values():
+		state.set_process(false)
+		state.set_physics_process(false)
+
+	var bt: int = data.behavior_type
+	if bt == EnemyData.BehaviorType.BOSS:
+		_active_behavior = null
+		return  # Boss uses its own script (Task 13)
+
+	if not _behavior_cache.has(bt):
+		var state: Node = _create_behavior(bt)
+		if state:
+			state.name = "BehaviorState_%d" % bt
+			add_child(state)
+			_behavior_cache[bt] = state
+
+	var active: Node = _behavior_cache.get(bt)
+	if active:
+		active.set_process(true)
+		active.set_physics_process(true)
+		if active.has_method("enter"):
+			active.enter()
+	_active_behavior = active
+
+
+func _create_behavior(bt: int) -> Node:
+	match bt:
+		EnemyData.BehaviorType.SWARM:
+			return EnemySwarmState.new()
+		EnemyData.BehaviorType.DIVER:
+			return EnemyDiverState.new()
+		EnemyData.BehaviorType.CHARGER:
+			return EnemyChargerState.new()
+		EnemyData.BehaviorType.TANK_SLAM:
+			return EnemySlamState.new()
+		EnemyData.BehaviorType.KITER:
+			return EnemyKiterState.new()
+		EnemyData.BehaviorType.ZONER:
+			return EnemyZonerState.new()
+	return null
 
 
 # --- Damage & hit feedback ---

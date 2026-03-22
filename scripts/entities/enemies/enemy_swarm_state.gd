@@ -12,7 +12,7 @@ const SCATTER_DURATION: float = 0.5
 
 
 func enter() -> void:
-	_enemy = owner as EnemyBase
+	_enemy = get_parent() as EnemyBase
 
 
 func physics_update(delta: float) -> void:

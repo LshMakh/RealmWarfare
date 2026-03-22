@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 name = "Skeleton"
-max_health = 20
+max_health = 15
 speed = 40.0
 damage = 10
 xp_reward = 1

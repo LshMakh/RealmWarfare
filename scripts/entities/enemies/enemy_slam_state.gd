@@ -20,7 +20,7 @@ const TELEGRAPH_TINT: Color = Color(1.4, 0.6, 0.6)
 
 
 func enter() -> void:
-	_enemy = owner as EnemyBase
+	_enemy = get_parent() as EnemyBase
 	_phase = Phase.APPROACHING
 	_phase_timer = 0.0
 	_throw_cooldown = THROW_INTERVAL

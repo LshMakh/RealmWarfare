@@ -25,7 +25,7 @@ const BEAM_HIT_TOLERANCE: float = deg_to_rad(5.0)
 
 
 func enter() -> void:
-	_enemy = owner as EnemyBase
+	_enemy = get_parent() as EnemyBase
 	_phase = Phase.SETUP
 	_phase_timer = SETUP_DURATION
 	_beam_active = false

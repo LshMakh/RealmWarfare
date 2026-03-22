@@ -16,7 +16,7 @@ const JAVELIN_INTERVAL: float = 2.5
 
 
 func enter() -> void:
-	_enemy = owner as EnemyBase
+	_enemy = get_parent() as EnemyBase
 	_javelin_cooldown = JAVELIN_INTERVAL
 	# Randomize initial strafe direction
 	_strafe_sign = 1.0 if randf() > 0.5 else -1.0
