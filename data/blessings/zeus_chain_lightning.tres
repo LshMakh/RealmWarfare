@@ -14,3 +14,16 @@ damage = 7
 cooldown = 1.2
 projectile_speed = 300.0
 projectile_count = 3
+max_level = 5
+level_stats = Array[Dictionary]([{
+"damage": 7, "bolts": 3, "spread_degrees": 30.0, "pierce": false, "chains": 0, "cooldown": 1.2
+}, {
+"damage": 8, "bolts": 4, "spread_degrees": 45.0, "pierce": false, "chains": 0, "cooldown": 1.1
+}, {
+"damage": 9, "bolts": 4, "spread_degrees": 45.0, "pierce": true, "chains": 0, "cooldown": 1.0
+}, {
+"damage": 10, "bolts": 5, "spread_degrees": 50.0, "pierce": true, "chains": 1, "cooldown": 0.9
+}, {
+"damage": 12, "bolts": 7, "spread_degrees": 60.0, "pierce": true, "chains": 2, "cooldown": 0.7
+}])
+level_descriptions = Array[String](["3-bolt fan spread", "4 bolts, wider spread", "Bolts pierce through enemies", "5 piercing bolts, each chains to 1", "7 piercing bolts, chain to 2 each"])

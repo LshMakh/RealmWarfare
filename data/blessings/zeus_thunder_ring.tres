@@ -14,3 +14,16 @@ damage = 8
 cooldown = 2.5
 radius = 60.0
 duration = 0.3
+max_level = 5
+level_stats = Array[Dictionary]([{
+"damage": 8, "radius": 60.0, "cooldown": 1.5, "knockback": 0.0, "pulses": 1, "field_duration": 0.0
+}, {
+"damage": 10, "radius": 100.0, "cooldown": 1.3, "knockback": 20.0, "pulses": 1, "field_duration": 0.0
+}, {
+"damage": 12, "radius": 100.0, "cooldown": 1.1, "knockback": 20.0, "pulses": 2, "field_duration": 0.0
+}, {
+"damage": 14, "radius": 130.0, "cooldown": 1.0, "knockback": 20.0, "pulses": 1, "field_duration": 1.0, "field_dps": 4
+}, {
+"damage": 18, "radius": 160.0, "cooldown": 0.8, "knockback": 30.0, "pulses": 1, "field_duration": 2.0, "field_dps": 6
+}])
+level_descriptions = Array[String](["Basic expanding ring", "Larger ring with knockback", "Pulses twice per activation", "Leaves electric field for 1s", "Massive storm dome, field persists 2s"])
