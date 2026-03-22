@@ -10,6 +10,7 @@ extends Node2D
 @onready var xp_pool: ObjectPool = $EntityLayer/XPPool
 @onready var blessing_manager: BlessingManager = $Systems/BlessingManager
 @onready var level_up_ui: CanvasLayer = $UILayer/LevelUpUI
+@onready var column_manager: ColumnManager = $ColumnManager
 
 
 func _ready() -> void:
@@ -67,6 +68,9 @@ func _ready() -> void:
 		preload("res://data/blessings/zeus_chain_lightning.tres"),
 		preload("res://data/blessings/zeus_aegis_barrier.tres"),
 	]
+
+	# Wire up column manager
+	column_manager.player = player
 
 	# Wire hurtbox health reference
 	player.hurtbox.health = player.health_component
