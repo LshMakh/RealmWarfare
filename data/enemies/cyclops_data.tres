@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/olympus/cyclops.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+name = "Cyclops"
+max_health = 60
+speed = 25.0
+damage = 20
+xp_reward = 3
+sprite_texture = ExtResource("2")
+is_boss = false
+collision_radius = 10.0
