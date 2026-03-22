@@ -33,12 +33,18 @@ func _init_clouds() -> void:
 		_cloud_sizes.append(Vector2(rng.randf_range(60.0, 120.0), rng.randf_range(18.0, 35.0)))
 		_cloud_speeds.append(rng.randf_range(4.0, 12.0))
 
+var _redraw_counter: int = 0
+
+
 func _process(delta: float) -> void:
 	for i in range(_cloud_positions.size()):
 		_cloud_positions[i].x += _cloud_speeds[i] * delta
 		if _cloud_positions[i].x > HALF_W + 130.0:
 			_cloud_positions[i].x = -HALF_W - 130.0
-	queue_redraw()
+	_redraw_counter += 1
+	if _redraw_counter >= 6:
+		_redraw_counter = 0
+		queue_redraw()
 
 func _draw() -> void:
 	_draw_base()

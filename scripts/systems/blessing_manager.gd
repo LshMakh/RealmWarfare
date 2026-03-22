@@ -428,52 +428,23 @@ class AegisOrbitalEffect extends Node2D:
 	func _ready() -> void:
 		z_index = 10
 
+	var _redraw_skip: int = 0
+
 	func _process(delta: float) -> void:
 		_pulse_time += delta * 5.0
-		# Record trail positions
-		_trail_timer -= delta
-		if _trail_timer <= 0.0:
-			_trail_timer = TRAIL_INTERVAL
-			_trail.push_back(global_position)
-			if _trail.size() > TRAIL_LENGTH:
-				_trail.pop_front()
-		queue_redraw()
+		_redraw_skip += 1
+		if _redraw_skip >= 3:
+			_redraw_skip = 0
+			queue_redraw()
 
 	func _draw() -> void:
 		var pulse: float = 0.7 + 0.3 * sin(_pulse_time)
-
-		# Draw trail (fading circles at previous positions)
-		for i in range(_trail.size()):
-			var t: float = float(i) / float(TRAIL_LENGTH)
-			var trail_alpha: float = t * 0.25 * pulse
-			var trail_pos: Vector2 = _trail[i] - global_position
-			var trail_size: float = 4.0 + t * 4.0
-			var trail_color := Color(0.4, 0.6, 1.0, trail_alpha)
-			draw_circle(trail_pos, trail_size, trail_color)
-
-		# Outer glow (large soft)
-		var outer_glow := Color(0.3, 0.5, 1.0, 0.15 * pulse)
-		draw_circle(Vector2.ZERO, 18.0, outer_glow)
-
-		# Mid glow
-		var mid_glow := Color(0.4, 0.6, 1.0, 0.3 * pulse)
-		draw_circle(Vector2.ZERO, 13.0, mid_glow)
-
-		# Shield core (bright white-blue)
-		var core_color := Color(0.6, 0.8, 1.0, 0.9 * pulse)
-		draw_circle(Vector2.ZERO, 9.0, core_color)
-
-		# Inner bright center
-		var center_color := Color(0.85, 0.92, 1.0, pulse)
-		draw_circle(Vector2.ZERO, 5.0, center_color)
-
-		# Shield arc (curved shield shape on the leading edge)
-		var arc_color := Color(0.8, 0.9, 1.0, 0.8 * pulse)
-		draw_arc(Vector2.ZERO, 11.0, -PI * 0.5, PI * 0.5, 12, arc_color, 2.5)
-
-		# Secondary arc (opposite side, dimmer)
-		var arc2_color := Color(0.5, 0.7, 1.0, 0.4 * pulse)
-		draw_arc(Vector2.ZERO, 11.0, PI * 0.5, PI * 1.5, 12, arc2_color, 1.5)
+		# Glow
+		draw_circle(Vector2.ZERO, 14.0, Color(0.4, 0.6, 1.0, 0.25 * pulse))
+		# Core
+		draw_circle(Vector2.ZERO, 8.0, Color(0.6, 0.8, 1.0, 0.9 * pulse))
+		# Center
+		draw_circle(Vector2.ZERO, 4.0, Color(0.85, 0.92, 1.0, pulse))
 
 
 # Hit spark effect when orbital strikes an enemy

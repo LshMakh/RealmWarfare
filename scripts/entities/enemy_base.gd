@@ -470,18 +470,31 @@ func _on_hit(_from_hitbox: HitboxComponent) -> void:
 	pass
 
 
+var _last_damage_number_time: float = 0.0
+const DAMAGE_NUMBER_COOLDOWN := 0.3
+
+
 func _on_damage_received(amount: int) -> void:
 	_flash_hit()
-	_spawn_damage_number(amount)
+	# Throttle damage numbers to avoid lag from AoE spam
+	var now: float = Time.get_ticks_msec() / 1000.0
+	if now - _last_damage_number_time >= DAMAGE_NUMBER_COOLDOWN:
+		_last_damage_number_time = now
+		_spawn_damage_number(amount)
+
+
+var _flash_tween: Tween = null
 
 
 func _flash_hit() -> void:
 	if _dying:
 		return
+	if _flash_tween and _flash_tween.is_running():
+		return
 	var restore_color := Color.WHITE
 	if data and data.is_boss:
 		restore_color = _boss_base_color()
-	var tween := create_tween()
+	_flash_tween = create_tween()
 	tween.tween_property(sprite, "modulate", Color(10, 10, 10, 1), 0.05)
 	tween.tween_property(sprite, "modulate", restore_color, 0.05)
 
