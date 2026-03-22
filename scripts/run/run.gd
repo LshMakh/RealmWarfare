@@ -14,6 +14,7 @@ extends Node2D
 @onready var hazard_manager: HazardManager = $Systems/HazardManager
 @onready var lightning_pool: ObjectPool = $EntityLayer/LightningPool
 @onready var crack_pool: ObjectPool = $EntityLayer/CrackPool
+@onready var active_ability: ActiveAbility = $Systems/ActiveAbility
 
 
 func _ready() -> void:
@@ -91,6 +92,11 @@ func _ready() -> void:
 		preload("res://data/blessings/zeus_chain_lightning.tres"),
 		preload("res://data/blessings/zeus_aegis_barrier.tres"),
 	]
+
+	# Wire up active ability
+	active_ability.player = player
+	active_ability.set_blessing_manager(blessing_manager)
+	hud.ability_button_pressed.connect(active_ability.activate)
 
 	# Wire up hazard manager
 	hazard_manager.player = player
