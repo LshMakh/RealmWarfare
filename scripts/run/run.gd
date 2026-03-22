@@ -21,6 +21,19 @@ extends Node2D
 func _ready() -> void:
 	GameState.start_new_run()
 
+	# Apply Favor bonuses AFTER start_new_run resets everything
+	var bonuses: Dictionary = FavorManager.get_active_bonuses()
+	GameState.damage_bonus = bonuses.get("damage_pct", 0.0) / 100.0
+	GameState.speed_bonus = bonuses.get("speed_pct", 0.0) / 100.0
+	GameState.xp_bonus = bonuses.get("xp_pct", 0.0) / 100.0
+	var hp_bonus: int = bonuses.get("max_hp", 0) as int
+	if hp_bonus > 0:
+		player.health_component.max_health += hp_bonus
+		player.health_component.current_health = player.health_component.max_health
+	var cd_pct: float = bonuses.get("cooldown_pct", 0.0) as float
+	if cd_pct > 0.0:
+		auto_attack.attack_cooldown *= (1.0 - cd_pct / 100.0)
+
 	# Wire up discovery tracker
 	discovery_tracker.set_favor_manager(FavorManager)
 
