@@ -4,6 +4,12 @@
 
 # Export
 .superpowers/
+
+# Claude Code
+.claude/
+
+# Superpowers docs
+docs/superpowers/
 *.apk
 *.aab
 
