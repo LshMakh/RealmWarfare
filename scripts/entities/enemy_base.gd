@@ -495,8 +495,8 @@ func _flash_hit() -> void:
 	if data and data.is_boss:
 		restore_color = _boss_base_color()
 	_flash_tween = create_tween()
-	tween.tween_property(sprite, "modulate", Color(10, 10, 10, 1), 0.05)
-	tween.tween_property(sprite, "modulate", restore_color, 0.05)
+	_flash_tween.tween_property(sprite, "modulate", Color(10, 10, 10, 1), 0.05)
+	_flash_tween.tween_property(sprite, "modulate", restore_color, 0.05)
 
 
 func _spawn_damage_number(amount: int) -> void:

@@ -1,7 +1,7 @@
 class_name WaveManager
 extends Node
 
-enum State { IDLE, SPAWNING, ACTIVE, BREATHER, BOSS, DONE }
+enum WaveState { IDLE, SPAWNING, ACTIVE, BREATHER, BOSS, DONE }
 
 @export var enemy_pool: ObjectPool
 @export var xp_pool: ObjectPool
@@ -22,7 +22,7 @@ var wave_table: Array = []  # Array of WaveData
 var enemy_lookup: Dictionary = {}  # {"skeleton": EnemyData, ...}
 
 # State machine
-var _state: State = State.IDLE
+var _state: WaveState = WaveState.IDLE
 var _current_wave_index: int = -1
 var _current_wave_data: WaveData = null
 var _run_time: float = 0.0
@@ -57,17 +57,17 @@ func _process(delta: float) -> void:
 	GameState.run_time = _run_time
 
 	match _state:
-		State.IDLE:
+		WaveState.IDLE:
 			_start_next_wave()
-		State.SPAWNING:
+		WaveState.SPAWNING:
 			_process_spawning(delta)
-		State.ACTIVE:
+		WaveState.ACTIVE:
 			_process_active(delta)
-		State.BREATHER:
+		WaveState.BREATHER:
 			_process_breather(delta)
-		State.BOSS:
+		WaveState.BOSS:
 			_process_boss(delta)
-		State.DONE:
+		WaveState.DONE:
 			pass
 
 
@@ -92,7 +92,7 @@ func _start_next_wave() -> void:
 	_sub_wave_timer = 0.0  # spawn first batch immediately
 	_wave_enemies_remaining = 0
 	_wave_timer = 0.0
-	_state = State.SPAWNING
+	_state = WaveState.SPAWNING
 
 
 func _process_spawning(delta: float) -> void:
@@ -110,7 +110,7 @@ func _process_spawning(delta: float) -> void:
 
 	# All sub-waves dispatched — transition to ACTIVE
 	if _sub_waves_remaining <= 0:
-		_state = State.ACTIVE
+		_state = WaveState.ACTIVE
 
 
 func _process_active(delta: float) -> void:
@@ -130,13 +130,13 @@ func _process_active(delta: float) -> void:
 func _end_wave() -> void:
 	GameEvents.wave_cleared.emit(_current_wave_data.wave_number)
 	_breather_timer = _current_wave_data.breather_duration
-	_state = State.BREATHER
+	_state = WaveState.BREATHER
 
 
 func _process_breather(delta: float) -> void:
 	_breather_timer -= delta
 	if _breather_timer <= 0.0:
-		_state = State.IDLE  # IDLE triggers _start_next_wave on next frame
+		_state = WaveState.IDLE  # IDLE triggers _start_next_wave on next frame
 
 
 func _spawn_boss() -> void:
@@ -150,7 +150,7 @@ func _spawn_boss() -> void:
 		boss.global_position = spawn_pos
 		boss.initialize(boss_data, player)
 		GameEvents.boss_spawned.emit(boss)
-	_state = State.BOSS
+	_state = WaveState.BOSS
 
 
 func _process_boss(delta: float) -> void:
@@ -297,7 +297,7 @@ func _spawn_powerup(pos: Vector2) -> void:
 
 
 func _on_boss_died(pos: Vector2) -> void:
-	_state = State.DONE
+	_state = WaveState.DONE
 	# Drop 10x XP gems in a burst pattern around the boss death position
 	if not xp_pool or not player:
 		return
