@@ -76,7 +76,7 @@ func apply_petrification(delta: float) -> void:
 func _get_speed_multiplier() -> float:
 	if _petrify_root_timer > 0.0:
 		return 0.0
-	return 1.0 - _petrification
+	return (1.0 - _petrification) * (1.0 + GameState.speed_bonus)
 
 
 func _update_petrification_visual() -> void:

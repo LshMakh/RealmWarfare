@@ -39,3 +39,4 @@ signal hazard_spawned(hazard_type: String, position: Vector2)
 # UI
 signal show_level_up_ui(choices: Array)
 signal hide_level_up_ui
+signal stat_bonus_chosen(stat_name: String, amount: float)

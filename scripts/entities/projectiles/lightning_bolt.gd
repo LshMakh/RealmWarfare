@@ -75,7 +75,7 @@ func _on_area_entered(area: Area2D) -> void:
 		if not enemy.visible or not enemy.is_in_group("enemies"):
 			return
 		if enemy.has_node("HealthComponent"):
-			enemy.get_node("HealthComponent").take_damage(damage)
+			enemy.get_node("HealthComponent").take_damage(GameState.apply_damage_bonus(damage))
 		_spawn_impact_flash(enemy as Node2D)
 		_released = true
 		set_deferred("monitoring", false)

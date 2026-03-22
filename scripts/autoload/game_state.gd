@@ -17,6 +17,11 @@ var mini_boss_kills: int = 0
 var ability_charge: float = 0.0
 var ability_charge_max: float = 100.0
 
+# Stat bonuses (cumulative percentages from generic level-up picks)
+var damage_bonus: float = 0.0   # e.g. 0.05 = +5%
+var speed_bonus: float = 0.0
+var xp_bonus: float = 0.0
+
 # Meta-currency
 var favor: int = 0
 
@@ -48,6 +53,9 @@ func start_new_run() -> void:
 	boss_killed = false
 	mini_boss_kills = 0
 	ability_charge = 0.0
+	damage_bonus = 0.0
+	speed_bonus = 0.0
+	xp_bonus = 0.0
 	is_run_active = true
 	_run_start_ticks = Time.get_ticks_msec()
 	GameEvents.run_started.emit()
@@ -89,6 +97,10 @@ func use_ability() -> bool:
 
 func _on_boss_died(_pos: Vector2) -> void:
 	boss_killed = true
+
+
+func apply_damage_bonus(base_damage: int) -> int:
+	return roundi(float(base_damage) * (1.0 + damage_bonus))
 
 
 func _calculate_xp_threshold(level: int) -> int:

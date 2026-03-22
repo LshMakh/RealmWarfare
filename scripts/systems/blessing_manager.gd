@@ -101,7 +101,7 @@ func _execute_thunder_pulse(damage: int, radius: float, knockback: float) -> voi
 		var dist: float = _player.global_position.distance_to(enemy.global_position)
 		if dist <= radius:
 			if enemy.has_node("HealthComponent"):
-				enemy.get_node("HealthComponent").take_damage(damage)
+				enemy.get_node("HealthComponent").take_damage(GameState.apply_damage_bonus(damage))
 			# Apply knockback away from player
 			if knockback > 0.0 and enemy.has_method("apply_knockback"):
 				var dir: Vector2 = (enemy.global_position - _player.global_position).normalized()
@@ -281,7 +281,7 @@ func _orbital_hit(damage: int, hit_pos: Vector2, do_stun: bool = false, stun_dur
 		var dist: float = hit_pos.distance_to(enemy.global_position)
 		if dist <= hit_radius:
 			if enemy.has_node("HealthComponent"):
-				enemy.get_node("HealthComponent").take_damage(damage)
+				enemy.get_node("HealthComponent").take_damage(GameState.apply_damage_bonus(damage))
 				# Hit flash on enemy
 				var orig_mod: Color = enemy.modulate
 				enemy.modulate = Color(0.5, 0.7, 1.0, 1.0)
@@ -514,7 +514,7 @@ class ThunderFieldEffect extends Node2D:
 			var dist: float = global_position.distance_to(enemy.global_position)
 			if dist <= field_radius:
 				if enemy.has_node("HealthComponent"):
-					enemy.get_node("HealthComponent").take_damage(tick_damage)
+					enemy.get_node("HealthComponent").take_damage(GameState.apply_damage_bonus(tick_damage))
 
 	func _draw() -> void:
 		var remaining: float = field_duration - _time
@@ -653,7 +653,7 @@ class StormCloudEffect extends Node2D:
 			var dist: float = global_position.distance_to(enemy.global_position)
 			if dist <= cloud_radius:
 				if enemy.has_node("HealthComponent"):
-					enemy.get_node("HealthComponent").take_damage(cloud_damage)
+					enemy.get_node("HealthComponent").take_damage(GameState.apply_damage_bonus(cloud_damage))
 					# Flash enemy white briefly on hit
 					var orig_mod: Color = enemy.modulate
 					enemy.modulate = Color(2.0, 2.0, 2.0, 1.0)
