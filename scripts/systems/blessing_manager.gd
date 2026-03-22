@@ -4,28 +4,37 @@ extends Node
 @export var available_blessings: Array[BlessingData] = []
 @export var choices_per_level: int = 3
 
-var _active_blessings: Array[BlessingData] = []
+# Level-based tracking
+var _blessing_levels: Dictionary = {}   # StringName -> int (1-5)
+var _blessing_data: Dictionary = {}     # StringName -> BlessingData
+var _blessing_timers: Dictionary = {}   # StringName -> float (cooldown countdown)
+
 var _player: Node2D
 
-# Thunder Ring state
-var _thunder_rings: Array[BlessingData] = []
-var _thunder_ring_timers: Array[float] = []
-
-# Storm Cloud state
-var _storm_clouds: Array[BlessingData] = []
-var _storm_cloud_timers: Array[float] = []
-
-# Orbital state (Aegis Barrier)
-var _orbitals: Array[Dictionary] = []  # {blessing, angle, node, hit_timer}
+# Orbital state (Aegis Barrier) — visual nodes that orbit the player
+var _orbitals: Array[Dictionary] = []  # [{node, angle, hit_timer}, ...]
 
 
 func _ready() -> void:
 	GameEvents.level_up.connect(_on_level_up)
 	GameEvents.blessing_chosen.connect(_on_blessing_chosen)
+	GameEvents.run_started.connect(_on_run_started)
 
 
 func set_player(player: Node2D) -> void:
 	_player = player
+
+
+func _on_run_started() -> void:
+	_blessing_levels.clear()
+	_blessing_data.clear()
+	_blessing_timers.clear()
+	# Clear any active orbital visual nodes
+	for entry: Dictionary in _orbitals:
+		var node: Node2D = entry["node"]
+		if is_instance_valid(node):
+			node.queue_free()
+	_orbitals.clear()
 
 
 func _process(delta: float) -> void:
@@ -40,26 +49,54 @@ func _process(delta: float) -> void:
 # --- Thunder Ring (AURA, centered on player, periodic pulse) ---
 
 func _process_thunder_rings(delta: float) -> void:
-	for i in range(_thunder_rings.size()):
-		_thunder_ring_timers[i] -= delta
-		if _thunder_ring_timers[i] <= 0.0:
-			_thunder_ring_timers[i] = _thunder_rings[i].cooldown
-			_fire_thunder_ring(_thunder_rings[i])
+	var bid: StringName = &"zeus_thunder_ring"
+	if not _blessing_levels.has(bid):
+		return
+	var level: int = _blessing_levels[bid]
+	var data: BlessingData = _blessing_data[bid]
+	var cooldown: float = data.get_stat(level, "cooldown", 1.5) as float
+
+	_blessing_timers[bid] = _blessing_timers.get(bid, 0.0) - delta
+	if _blessing_timers[bid] <= 0.0:
+		_blessing_timers[bid] = cooldown
+		_fire_thunder_ring(data, level)
 
 
-func _fire_thunder_ring(blessing: BlessingData) -> void:
-	# Deal damage to enemies in radius
+func _fire_thunder_ring(data: BlessingData, level: int) -> void:
+	var damage: int = data.get_stat(level, "damage", 8) as int
+	var radius: float = data.get_stat(level, "radius", 60.0) as float
+	var knockback: float = data.get_stat(level, "knockback", 0.0) as float
+	var pulses: int = data.get_stat(level, "pulses", 1) as int
+
+	for pulse_idx in range(pulses):
+		# Stagger pulses slightly if more than one
+		if pulse_idx == 0:
+			_execute_thunder_pulse(damage, radius, knockback)
+		else:
+			# Delay subsequent pulses by 0.15s each
+			get_tree().create_timer(0.15 * pulse_idx).timeout.connect(
+				_execute_thunder_pulse.bind(damage, radius, knockback)
+			)
+
+
+func _execute_thunder_pulse(damage: int, radius: float, knockback: float) -> void:
+	if not is_instance_valid(_player):
+		return
 	var enemies := get_tree().get_nodes_in_group("enemies")
 	for enemy: Node2D in enemies:
 		if not enemy.visible:
 			continue
 		var dist: float = _player.global_position.distance_to(enemy.global_position)
-		if dist <= blessing.radius:
+		if dist <= radius:
 			if enemy.has_node("HealthComponent"):
-				enemy.get_node("HealthComponent").take_damage(blessing.damage)
+				enemy.get_node("HealthComponent").take_damage(damage)
+			# Apply knockback if > 0
+			if knockback > 0.0 and enemy is CharacterBody2D:
+				var dir: Vector2 = (enemy.global_position - _player.global_position).normalized()
+				enemy.velocity += dir * knockback
 
 	# Spawn ring visual
-	_spawn_ring_effect(blessing.radius)
+	_spawn_ring_effect(radius)
 
 
 func _spawn_ring_effect(radius: float) -> void:
@@ -72,46 +109,68 @@ func _spawn_ring_effect(radius: float) -> void:
 # --- Storm Cloud (AURA, spawns at random nearby position) ---
 
 func _process_storm_clouds(delta: float) -> void:
-	for i in range(_storm_clouds.size()):
-		_storm_cloud_timers[i] -= delta
-		if _storm_cloud_timers[i] <= 0.0:
-			_storm_cloud_timers[i] = _storm_clouds[i].cooldown
-			_fire_storm_cloud(_storm_clouds[i])
+	var bid: StringName = &"zeus_storm_cloud"
+	if not _blessing_levels.has(bid):
+		return
+	var level: int = _blessing_levels[bid]
+	var data: BlessingData = _blessing_data[bid]
+	var cooldown: float = data.get_stat(level, "cooldown", 3.0) as float
+
+	_blessing_timers[bid] = _blessing_timers.get(bid, 0.0) - delta
+	if _blessing_timers[bid] <= 0.0:
+		_blessing_timers[bid] = cooldown
+		_fire_storm_cloud(data, level)
 
 
-func _fire_storm_cloud(blessing: BlessingData) -> void:
-	# Spawn at random position 40-100px from player
-	var angle := randf() * TAU
-	var dist := randf_range(40.0, 100.0)
-	var offset := Vector2(cos(angle), sin(angle)) * dist
-	var cloud_pos: Vector2 = _player.global_position + offset
-	var cloud := StormCloudEffect.new()
-	cloud.cloud_damage = blessing.damage
-	cloud.cloud_radius = blessing.radius
-	cloud.cloud_duration = blessing.duration
-	cloud.global_position = cloud_pos
-	_player.get_parent().add_child(cloud)
+func _fire_storm_cloud(data: BlessingData, level: int) -> void:
+	var damage: int = data.get_stat(level, "damage", 6) as int
+	var cloud_count: int = data.get_stat(level, "clouds", 1) as int
+	var radius: float = data.get_stat(level, "radius", 35.0) as float
+	var duration: float = data.get_stat(level, "duration", 1.5) as float
+
+	for i in range(cloud_count):
+		# Spawn at random position 40-100px from player
+		var angle := randf() * TAU
+		var dist := randf_range(40.0, 100.0)
+		var offset := Vector2(cos(angle), sin(angle)) * dist
+		var cloud_pos: Vector2 = _player.global_position + offset
+		var cloud := StormCloudEffect.new()
+		cloud.cloud_damage = damage
+		cloud.cloud_radius = radius
+		cloud.cloud_duration = duration
+		cloud.global_position = cloud_pos
+		_player.get_parent().add_child(cloud)
 
 
 # --- Orbital (Aegis Barrier, rotating around player) ---
 
 func _process_orbitals(delta: float) -> void:
+	var bid: StringName = &"zeus_aegis_barrier"
+	if not _blessing_levels.has(bid):
+		return
+	var level: int = _blessing_levels[bid]
+	var data: BlessingData = _blessing_data[bid]
+	var rotation_speed: float = data.get_stat(level, "rotation_speed", 2.1) as float
+	var orbit_radius: float = data.get_stat(level, "orbit_radius", 45.0) as float
+	var hit_cooldown: float = data.get_stat(level, "hit_cooldown", 1.0) as float
+	var damage: int = data.get_stat(level, "damage", 6) as int
+
 	for entry: Dictionary in _orbitals:
-		var blessing: BlessingData = entry["blessing"]
-		entry["angle"] = fmod(entry["angle"] + delta * 3.0, TAU)
+		entry["angle"] = fmod(entry["angle"] + delta * rotation_speed, TAU)
 		var node: Node2D = entry["node"]
 		if is_instance_valid(node):
-			var orbit_pos := Vector2(cos(entry["angle"]), sin(entry["angle"])) * blessing.radius
+			var orbit_pos := Vector2(cos(entry["angle"]), sin(entry["angle"])) * orbit_radius
 			node.global_position = _player.global_position + orbit_pos
 
 		# Periodic hit check
 		entry["hit_timer"] = entry["hit_timer"] - delta
 		if entry["hit_timer"] <= 0.0:
-			entry["hit_timer"] = blessing.cooldown
-			_orbital_hit(blessing, _player.global_position + Vector2(cos(entry["angle"]), sin(entry["angle"])) * blessing.radius)
+			entry["hit_timer"] = hit_cooldown
+			var hit_pos: Vector2 = _player.global_position + Vector2(cos(entry["angle"]), sin(entry["angle"])) * orbit_radius
+			_orbital_hit(damage, hit_pos)
 
 
-func _orbital_hit(blessing: BlessingData, hit_pos: Vector2) -> void:
+func _orbital_hit(damage: int, hit_pos: Vector2) -> void:
 	var hit_radius: float = 20.0
 	var enemies := get_tree().get_nodes_in_group("enemies")
 	for enemy: Node2D in enemies:
@@ -120,7 +179,7 @@ func _orbital_hit(blessing: BlessingData, hit_pos: Vector2) -> void:
 		var dist: float = hit_pos.distance_to(enemy.global_position)
 		if dist <= hit_radius:
 			if enemy.has_node("HealthComponent"):
-				enemy.get_node("HealthComponent").take_damage(blessing.damage)
+				enemy.get_node("HealthComponent").take_damage(damage)
 				# Hit flash on enemy
 				var orig_mod: Color = enemy.modulate
 				enemy.modulate = Color(0.5, 0.7, 1.0, 1.0)
@@ -138,7 +197,7 @@ func _spawn_orbital_hit_spark(pos: Vector2) -> void:
 	_player.get_parent().add_child(spark)
 
 
-func _spawn_orbital_visual(blessing: BlessingData) -> Node2D:
+func _spawn_orbital_visual() -> Node2D:
 	var orbital := AegisOrbitalEffect.new()
 	_player.get_parent().add_child(orbital)
 	return orbital
@@ -151,73 +210,116 @@ func _on_level_up(_new_level: int) -> void:
 	GameEvents.show_level_up_ui.emit(choices)
 
 
-func _on_blessing_chosen(blessing: BlessingData) -> void:
-	_active_blessings.append(blessing)
-	GameState.active_blessings = _active_blessings
+func _on_blessing_chosen(blessing: Resource) -> void:
+	var data: BlessingData = blessing as BlessingData
+	if not data:
+		return
+	var bid: StringName = data.blessing_id
 
-	match blessing.effect_type:
-		BlessingData.EffectType.AURA:
-			if blessing.blessing_id == &"zeus_storm_cloud":
-				_storm_clouds.append(blessing)
-				_storm_cloud_timers.append(blessing.cooldown * 0.5)  # First one fires sooner
-			else:
-				# Thunder Ring
-				_thunder_rings.append(blessing)
-				_thunder_ring_timers.append(blessing.cooldown * 0.5)
-		BlessingData.EffectType.ORBITAL:
-			var node: Node2D = _spawn_orbital_visual(blessing)
-			_orbitals.append({
-				"blessing": blessing,
-				"angle": 0.0,
-				"node": node,
-				"hit_timer": blessing.cooldown,
-			})
-			# Redistribute all orbitals evenly
-			var total: int = _orbitals.size()
-			for idx in range(total):
-				_orbitals[idx]["angle"] = float(idx) * (TAU / float(total))
+	if _blessing_levels.has(bid):
+		# Upgrade existing blessing
+		_blessing_levels[bid] = mini(_blessing_levels[bid] + 1, data.max_level)
+		_on_blessing_upgraded(data, _blessing_levels[bid])
+	else:
+		# New blessing
+		_blessing_levels[bid] = 1
+		_blessing_data[bid] = data
+		_blessing_timers[bid] = 0.0
+		_activate_blessing(data)
 
+	# Update GameState for UI tracking
+	GameState.active_blessings = _get_active_blessings_list()
 	GameEvents.hide_level_up_ui.emit()
 
 
+func _activate_blessing(data: BlessingData) -> void:
+	# Called only when a NEW blessing is first acquired (level 1).
+	# Set up initial persistent visual/state for ORBITAL types.
+	match data.effect_type:
+		BlessingData.EffectType.ORBITAL:
+			var shields: int = data.get_stat(1, "shields", 2) as int
+			for i in range(shields):
+				var node: Node2D = _spawn_orbital_visual()
+				var angle: float = float(i) * (TAU / float(shields))
+				_orbitals.append({
+					"node": node,
+					"angle": angle,
+					"hit_timer": data.get_stat(1, "hit_cooldown", 1.0) as float,
+				})
+		BlessingData.EffectType.AURA:
+			# Timer already set to 0.0 so first tick fires quickly
+			pass
+
+
+func _on_blessing_upgraded(data: BlessingData, new_level: int) -> void:
+	# Handle upgrade side effects for specific blessing types.
+	if data.effect_type == BlessingData.EffectType.ORBITAL:
+		# Adjust orbital count to match new level's shield count
+		var target_shields: int = data.get_stat(new_level, "shields", 2) as int
+		# Add new orbitals if needed
+		while _orbitals.size() < target_shields:
+			var node: Node2D = _spawn_orbital_visual()
+			_orbitals.append({
+				"node": node,
+				"angle": 0.0,
+				"hit_timer": data.get_stat(new_level, "hit_cooldown", 1.0) as float,
+			})
+		# Remove excess orbitals if needed (unlikely but safe)
+		while _orbitals.size() > target_shields:
+			var entry: Dictionary = _orbitals.pop_back()
+			var node: Node2D = entry["node"]
+			if is_instance_valid(node):
+				node.queue_free()
+		# Redistribute all orbitals evenly
+		var total: int = _orbitals.size()
+		for idx in range(total):
+			_orbitals[idx]["angle"] = float(idx) * (TAU / float(total))
+
+
 func _pick_random_choices() -> Array:
-	# Collect active blessing IDs to filter duplicates
-	var active_ids: Array[StringName] = []
-	for b: BlessingData in _active_blessings:
-		if b.blessing_id != &"":
-			active_ids.append(b.blessing_id)
-
-	# Build fresh pool excluding already-active blessings
 	var pool: Array = []
-	for b: BlessingData in available_blessings:
-		if b.blessing_id not in active_ids:
-			pool.append(b)
 
-	var choices: Array = []
-	# Draw from unique pool first
-	var unique_pool: Array = pool.duplicate()
-	for i in range(mini(choices_per_level, unique_pool.size())):
-		var idx: int = randi() % unique_pool.size()
-		choices.append(unique_pool[idx])
-		unique_pool.remove_at(idx)
+	# Add owned blessings that aren't maxed as upgrade options
+	for bid: StringName in _blessing_levels:
+		if _blessing_levels[bid] < _blessing_data[bid].max_level:
+			pool.append(_blessing_data[bid])
 
-	# If not enough unique choices, fill remaining slots with upgrades
-	if choices.size() < choices_per_level and _active_blessings.size() > 0:
-		var upgrade_pool: Array = []
-		for b: BlessingData in available_blessings:
-			if b.blessing_id in active_ids:
-				upgrade_pool.append(b)
-		upgrade_pool.shuffle()
-		for b: BlessingData in upgrade_pool:
-			if choices.size() >= choices_per_level:
-				break
-			choices.append(b)
+	# Add unowned blessings as new options
+	for blessing: BlessingData in available_blessings:
+		if not _blessing_levels.has(blessing.blessing_id):
+			pool.append(blessing)
 
-	return choices
+	# Shuffle and pick up to choices_per_level
+	pool.shuffle()
+	return pool.slice(0, mini(choices_per_level, pool.size()))
+
+
+# --- Getters ---
+
+func get_blessing_level(bid: StringName) -> int:
+	return _blessing_levels.get(bid, 0)
+
+
+func get_blessing_data(bid: StringName) -> BlessingData:
+	return _blessing_data.get(bid, null) as BlessingData
+
+
+func get_active_blessing_ids() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	for bid: StringName in _blessing_levels:
+		ids.append(bid)
+	return ids
 
 
 func get_active_blessings() -> Array[BlessingData]:
-	return _active_blessings
+	return _get_active_blessings_list()
+
+
+func _get_active_blessings_list() -> Array[BlessingData]:
+	var result: Array[BlessingData] = []
+	for bid: StringName in _blessing_data:
+		result.append(_blessing_data[bid])
+	return result
 
 
 # =============================================================================
