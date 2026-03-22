@@ -54,7 +54,6 @@ func _process(delta: float) -> void:
 		return
 
 	_run_time += delta
-	GameState.run_time = _run_time
 
 	match _state:
 		WaveState.IDLE:
@@ -271,7 +270,7 @@ func _spawn_ambush(_index: int, _total: int) -> Vector2:
 
 # --- Kill tracking & drops ---
 
-func _on_enemy_killed(pos: Vector2) -> void:
+func _on_enemy_killed(pos: Vector2, xp_value: int) -> void:
 	GameState.kills += 1
 	_wave_enemies_remaining = maxi(_wave_enemies_remaining - 1, 0)
 
@@ -282,7 +281,7 @@ func _on_enemy_killed(pos: Vector2) -> void:
 	if xp_pool:
 		var gem: Node = xp_pool.get_instance()
 		if gem and gem.has_method("activate"):
-			gem.activate(pos, 1, player)
+			gem.activate(pos, xp_value, player)
 
 
 func _spawn_powerup(pos: Vector2) -> void:

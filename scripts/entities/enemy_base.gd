@@ -152,9 +152,9 @@ func _physics_process(delta: float) -> void:
 		return
 	_behavior_time += delta
 	match data.behavior_type:
-		EnemyData.BehaviorType.CHASE:
+		EnemyData.BehaviorType.SWARM:
 			_behavior_chase()
-		EnemyData.BehaviorType.ZIGZAG:
+		EnemyData.BehaviorType.DIVER:
 			_behavior_zigzag()
 		EnemyData.BehaviorType.TANK_SLAM:
 			_behavior_tank_slam(delta)
@@ -351,7 +351,7 @@ func _behavior_boss(delta: float) -> void:
 		_minion_spawn_timer -= delta
 		if _minion_spawn_timer <= 0.0:
 			_minion_spawn_timer = 5.0
-			GameEvents.enemy_killed.emit(global_position)
+			GameEvents.enemy_killed.emit(global_position, 0)
 
 	# Phase 3: AoE pulse
 	if _boss_phase >= 3:
@@ -532,7 +532,7 @@ func _on_died() -> void:
 
 
 func _play_death_effect() -> void:
-	GameEvents.enemy_killed.emit(global_position)
+	GameEvents.enemy_killed.emit(global_position, data.xp_reward)
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(self, "modulate", Color(1, 1, 1, 0), 0.3)
@@ -542,7 +542,7 @@ func _play_death_effect() -> void:
 
 
 func _play_boss_death_effect() -> void:
-	GameEvents.enemy_killed.emit(global_position)
+	GameEvents.enemy_killed.emit(global_position, data.xp_reward)
 	GameEvents.boss_died.emit(global_position)
 	# White flash
 	sprite.modulate = Color(10, 10, 10, 1)
