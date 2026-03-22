@@ -67,16 +67,22 @@ func _fire_thunder_ring(data: BlessingData, level: int) -> void:
 	var radius: float = data.get_stat(level, "radius", 60.0) as float
 	var knockback: float = data.get_stat(level, "knockback", 0.0) as float
 	var pulses: int = data.get_stat(level, "pulses", 1) as int
+	var field_duration: float = data.get_stat(level, "field_duration", 0.0) as float
+	var field_dps: int = data.get_stat(level, "field_dps", 0) as int
 
 	for pulse_idx in range(pulses):
 		# Stagger pulses slightly if more than one
 		if pulse_idx == 0:
 			_execute_thunder_pulse(damage, radius, knockback)
 		else:
-			# Delay subsequent pulses by 0.15s each
-			get_tree().create_timer(0.15 * pulse_idx).timeout.connect(
+			# Delay subsequent pulses by 0.3s each
+			get_tree().create_timer(0.3 * pulse_idx).timeout.connect(
 				_execute_thunder_pulse.bind(damage, radius, knockback)
 			)
+
+	# Spawn a static damage field after the ring if the level grants one
+	if field_duration > 0.0 and field_dps > 0:
+		_spawn_thunder_field(radius, field_duration, field_dps)
 
 
 func _execute_thunder_pulse(damage: int, radius: float, knockback: float) -> void:
@@ -90,10 +96,10 @@ func _execute_thunder_pulse(damage: int, radius: float, knockback: float) -> voi
 		if dist <= radius:
 			if enemy.has_node("HealthComponent"):
 				enemy.get_node("HealthComponent").take_damage(damage)
-			# Apply knockback if > 0
-			if knockback > 0.0 and enemy is CharacterBody2D:
+			# Apply knockback away from player
+			if knockback > 0.0 and enemy.has_method("apply_knockback"):
 				var dir: Vector2 = (enemy.global_position - _player.global_position).normalized()
-				enemy.velocity += dir * knockback
+				enemy.apply_knockback(dir, knockback)
 
 	# Spawn ring visual
 	_spawn_ring_effect(radius)
@@ -104,6 +110,17 @@ func _spawn_ring_effect(radius: float) -> void:
 	ring.ring_radius = radius
 	ring.global_position = _player.global_position
 	_player.get_parent().add_child(ring)
+
+
+func _spawn_thunder_field(radius: float, duration: float, dps: int) -> void:
+	if not is_instance_valid(_player):
+		return
+	var field := ThunderFieldEffect.new()
+	field.field_radius = radius
+	field.field_duration = duration
+	field.field_dps = dps
+	field.global_position = _player.global_position
+	_player.get_parent().add_child(field)
 
 
 # --- Storm Cloud (AURA, spawns at random nearby position) ---
@@ -127,6 +144,10 @@ func _fire_storm_cloud(data: BlessingData, level: int) -> void:
 	var cloud_count: int = data.get_stat(level, "clouds", 1) as int
 	var radius: float = data.get_stat(level, "radius", 35.0) as float
 	var duration: float = data.get_stat(level, "duration", 1.5) as float
+	var homing: bool = data.get_stat(level, "homing", false) as bool
+	# TODO: chain_lightning — when true, lightning arcs between nearby clouds.
+	# Full implementation deferred to a polish pass.
+	#var chain_lightning: bool = data.get_stat(level, "chain_lightning", false) as bool
 
 	for i in range(cloud_count):
 		# Spawn at random position 40-100px from player
@@ -138,6 +159,7 @@ func _fire_storm_cloud(data: BlessingData, level: int) -> void:
 		cloud.cloud_damage = damage
 		cloud.cloud_radius = radius
 		cloud.cloud_duration = duration
+		cloud.cloud_homing = homing
 		cloud.global_position = cloud_pos
 		_player.get_parent().add_child(cloud)
 
@@ -371,11 +393,82 @@ class ThunderRingEffect extends Node2D:
 			draw_arc(Vector2.ZERO, _current_radius * 1.1, 0.0, TAU, 64, halo_color, 3.0)
 
 
+# Thunder Field: static damage zone left behind after a thunder ring (Lv4+)
+class ThunderFieldEffect extends Node2D:
+	var field_radius: float = 60.0
+	var field_duration: float = 1.0
+	var field_dps: int = 4
+	var _time: float = 0.0
+	var _damage_timer: float = 0.0
+	var _damage_interval: float = 0.5
+	var _crackle_time: float = 0.0
+
+	func _ready() -> void:
+		z_index = 1
+
+	func _process(delta: float) -> void:
+		_time += delta
+		_damage_timer -= delta
+		_crackle_time += delta * 3.0
+
+		# Deal DPS in ticks every _damage_interval seconds
+		if _damage_timer <= 0.0:
+			_damage_timer = _damage_interval
+			_deal_field_damage()
+
+		# Expire
+		if _time >= field_duration:
+			queue_free()
+
+		queue_redraw()
+
+	func _deal_field_damage() -> void:
+		var tick_damage: int = maxi(roundi(float(field_dps) * _damage_interval), 1)
+		var enemies := get_tree().get_nodes_in_group("enemies")
+		for enemy: Node2D in enemies:
+			if not enemy.visible:
+				continue
+			var dist: float = global_position.distance_to(enemy.global_position)
+			if dist <= field_radius:
+				if enemy.has_node("HealthComponent"):
+					enemy.get_node("HealthComponent").take_damage(tick_damage)
+
+	func _draw() -> void:
+		var remaining: float = field_duration - _time
+		var alpha: float = clampf(remaining / 0.4, 0.0, 1.0)
+		# Quick fade-in
+		var fade_in: float = clampf(_time / 0.2, 0.0, 1.0)
+		alpha *= fade_in
+
+		# Semi-transparent electric ground zone
+		var zone_color := Color(0.2, 0.4, 0.8, 0.15 * alpha)
+		draw_circle(Vector2.ZERO, field_radius, zone_color)
+
+		# Crackling edge ring
+		var edge_color := Color(0.4, 0.7, 1.0, 0.5 * alpha)
+		draw_arc(Vector2.ZERO, field_radius, 0.0, TAU, 48, edge_color, 2.0)
+
+		# Inner shimmer ring that pulses
+		var shimmer: float = 0.3 + 0.2 * sin(_crackle_time)
+		var inner_color := Color(0.5, 0.8, 1.0, shimmer * alpha)
+		draw_arc(Vector2.ZERO, field_radius * 0.6, 0.0, TAU, 32, inner_color, 1.5)
+
+		# Small bright sparks scattered inside
+		var spark_color := Color(0.7, 0.9, 1.0, 0.6 * alpha)
+		for i in range(4):
+			var spark_angle: float = _crackle_time * (0.5 + float(i) * 0.3) + float(i) * TAU / 4.0
+			var spark_dist: float = field_radius * (0.3 + 0.2 * sin(spark_angle * 1.7))
+			var spark_pos := Vector2(cos(spark_angle), sin(spark_angle)) * spark_dist
+			draw_circle(spark_pos, 2.0, spark_color)
+
+
 # Storm Cloud: dramatic dark cloud with bright lightning, damages area over duration
 class StormCloudEffect extends Node2D:
 	var cloud_damage: int = 6
 	var cloud_radius: float = 40.0
 	var cloud_duration: float = 2.0
+	var cloud_homing: bool = false
+	var _homing_speed: float = 30.0
 	var _time: float = 0.0
 	var _flash_timer: float = 0.0
 	var _flash_on: bool = false
@@ -399,6 +492,10 @@ class StormCloudEffect extends Node2D:
 		_time += delta
 		_damage_timer -= delta
 		_flash_timer -= delta
+
+		# Homing: drift toward the nearest enemy
+		if cloud_homing:
+			_drift_toward_nearest_enemy(delta)
 
 		# Periodic damage
 		if _damage_timer <= 0.0:
@@ -426,6 +523,21 @@ class StormCloudEffect extends Node2D:
 			queue_free()
 
 		queue_redraw()
+
+	func _drift_toward_nearest_enemy(delta: float) -> void:
+		var nearest: Node2D = null
+		var nearest_dist: float = 999999.0
+		var enemies := get_tree().get_nodes_in_group("enemies")
+		for enemy: Node2D in enemies:
+			if not enemy.visible:
+				continue
+			var dist: float = global_position.distance_to(enemy.global_position)
+			if dist < nearest_dist:
+				nearest_dist = dist
+				nearest = enemy
+		if nearest and nearest_dist > 5.0:
+			var dir: Vector2 = (nearest.global_position - global_position).normalized()
+			global_position += dir * _homing_speed * delta
 
 	func _generate_bolts() -> void:
 		_bolt_segments.clear()
