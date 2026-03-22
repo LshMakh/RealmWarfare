@@ -1,0 +1,17 @@
+# Godot 4 specific
+.godot/
+*.translation
+
+# Export
+.superpowers/
+*.apk
+*.aab
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Android keystore
+*.keystore
+*.jks
