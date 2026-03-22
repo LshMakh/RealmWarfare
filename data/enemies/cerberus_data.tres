@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1")
 name = "Cerberus"
-max_health = 300
+max_health = 500
 speed = 35.0
 damage = 25
-xp_reward = 20
+xp_reward = 50
 sprite_texture = ExtResource("2")
 is_boss = true
 collision_radius = 14.0
-behavior_type = 4
+behavior_type = 6

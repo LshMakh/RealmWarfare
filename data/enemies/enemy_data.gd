@@ -1,7 +1,7 @@
 class_name EnemyData
 extends Resource
 
-enum BehaviorType { CHASE, ZIGZAG, TANK_SLAM, CHARGER, BOSS }
+enum BehaviorType { SWARM, DIVER, CHARGER, TANK_SLAM, KITER, ZONER, BOSS }
 
 @export var name: String = ""
 @export var max_health: int = 20
@@ -11,4 +11,4 @@ enum BehaviorType { CHASE, ZIGZAG, TANK_SLAM, CHARGER, BOSS }
 @export var sprite_texture: Texture2D
 @export var is_boss: bool = false
 @export var collision_radius: float = 6.0
-@export var behavior_type: BehaviorType = BehaviorType.CHASE
+@export var behavior_type: BehaviorType = BehaviorType.SWARM

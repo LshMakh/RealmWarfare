@@ -5,7 +5,7 @@ signal run_started
 signal run_ended(result: Dictionary)
 
 # Combat
-signal enemy_killed(position: Vector2)
+signal enemy_killed(position: Vector2, xp_value: int)
 signal player_damaged(amount: int)
 signal player_died
 
@@ -26,6 +26,17 @@ signal wave_cleared(wave_number: int)
 # Pickups
 signal powerup_collected(pickup_data: Resource, position: Vector2)
 
+# Abilities
+signal active_ability_used
+
+# Discoveries & progression
+signal discovery_made(discovery_id: String, discovery_name: String)
+signal personal_best_broken(category: String, value: float)
+
+# Environment
+signal hazard_spawned(hazard_type: String, position: Vector2)
+
 # UI
 signal show_level_up_ui(choices: Array)
 signal hide_level_up_ui
+signal stat_bonus_chosen(stat_name: String, amount: float)

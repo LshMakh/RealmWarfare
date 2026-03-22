@@ -23,6 +23,8 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 
 GameEvents="*res://scripts/autoload/game_events.gd"
 GameState="*res://scripts/autoload/game_state.gd"
+JuiceManager="*res://scripts/systems/juice_manager.gd"
+FavorManager="*res://scripts/systems/favor_manager.gd"
 
 [display]
 
@@ -31,7 +33,6 @@ window/size/viewport_height=360
 window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 
 [input]
 
@@ -63,6 +64,13 @@ move_down={
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true
+
+[layer_names]
+
+2d_physics/layer_1="Player"
+2d_physics/layer_2="Enemies"
+2d_physics/layer_3="EnemyHitbox"
+2d_physics/layer_4="Obstacles"
 
 [physics]
 
