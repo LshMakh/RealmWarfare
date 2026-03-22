@@ -4,11 +4,13 @@ extends Node2D
 @export var glow_color: Color = Color.WHITE
 
 
+func set_colors(main: Color, glow: Color) -> void:
+	draw_color = main
+	glow_color = glow
+	queue_redraw()
+
+
 func _draw() -> void:
-	var parent: Node = get_parent()
-	if parent and parent.data:
-		draw_color = parent.data.color
-		glow_color = parent.data.glow_color
 
 	# Outer glow
 	draw_circle(Vector2.ZERO, 8.0, Color(glow_color, 0.3))

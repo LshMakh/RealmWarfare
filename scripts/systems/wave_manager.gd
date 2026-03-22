@@ -113,7 +113,7 @@ func _on_enemy_killed(pos: Vector2) -> void:
 
 func _spawn_powerup(pos: Vector2) -> void:
 	var pickup: Node = powerup_scene.instantiate()
-	var data: PickupData = powerup_data_list[randi() % powerup_data_list.size()]
+	var data: Resource = powerup_data_list[randi() % powerup_data_list.size()]
 	if _entity_layer:
 		_entity_layer.add_child(pickup)
 	else:

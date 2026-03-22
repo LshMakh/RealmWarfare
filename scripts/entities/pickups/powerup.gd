@@ -1,15 +1,16 @@
 extends Area2D
 
-var data: PickupData
+var data: Resource
 var _bob_time: float = 0.0
 var _visual: Node2D
 
 
-func initialize(pickup_data: PickupData, pos: Vector2) -> void:
+func initialize(pickup_data: Resource, pos: Vector2) -> void:
 	data = pickup_data
 	global_position = pos
 	_visual = $Visual
-	_visual.queue_redraw()
+	if _visual.has_method("set_colors"):
+		_visual.set_colors(data.color, data.glow_color)
 
 
 func _ready() -> void:
@@ -30,13 +31,13 @@ func _on_body_entered(body: Node2D) -> void:
 		queue_free()
 		return
 
-	match data.effect_type:
-		PickupData.EffectType.HEAL:
-			_apply_heal(body)
-		PickupData.EffectType.MAGNET:
-			_apply_magnet()
-		PickupData.EffectType.BOMB:
-			_apply_bomb()
+	var effect: int = data.effect_type
+	if effect == 0:  # HEAL
+		_apply_heal(body)
+	elif effect == 1:  # MAGNET
+		_apply_magnet()
+	elif effect == 2:  # BOMB
+		_apply_bomb()
 
 	GameEvents.powerup_collected.emit(data, global_position)
 	queue_free()
