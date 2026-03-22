@@ -24,11 +24,21 @@ func _ready() -> void:
 	wave_manager.enemy_pool = enemy_pool
 	wave_manager.xp_pool = xp_pool
 	wave_manager.player = player
-	wave_manager.enemy_types = [
-		preload("res://data/enemies/harpy_data.tres"),
-		preload("res://data/enemies/cyclops_data.tres"),
-		preload("res://data/enemies/minotaur_data.tres"),
-		preload("res://data/enemies/skeleton_data.tres"),
+	wave_manager.enemy_lookup = {
+		"skeleton": preload("res://data/enemies/skeleton_data.tres"),
+		"harpy": preload("res://data/enemies/harpy_data.tres"),
+		"minotaur": preload("res://data/enemies/minotaur_data.tres"),
+		"cyclops": preload("res://data/enemies/cyclops_data.tres"),
+	}
+	wave_manager.wave_table = [
+		preload("res://data/waves/olympus/wave_01.tres"),
+		preload("res://data/waves/olympus/wave_02.tres"),
+		preload("res://data/waves/olympus/wave_03.tres"),
+		preload("res://data/waves/olympus/wave_04.tres"),
+		preload("res://data/waves/olympus/wave_05.tres"),
+		preload("res://data/waves/olympus/wave_06.tres"),
+		preload("res://data/waves/olympus/wave_07.tres"),
+		preload("res://data/waves/olympus/wave_08.tres"),
 	]
 	wave_manager.boss_data = preload("res://data/enemies/cerberus_data.tres")
 	wave_manager.powerup_scene = preload("res://scenes/entities/pickups/powerup.tscn")
