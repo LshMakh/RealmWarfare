@@ -7,7 +7,7 @@ enum WaveState { IDLE, SPAWNING, ACTIVE, BREATHER, BOSS, DONE }
 @export var player: CharacterBody2D
 @export var boss_data: EnemyData
 @export var spawn_radius: float = 300.0
-@export var max_active_enemies: int = 100
+@export var max_active_enemies: int = 120
 @export var boss_trickle_interval: float = 4.0
 @export var boss_trickle_count: int = 2
 @export var crack_pool: ObjectPool

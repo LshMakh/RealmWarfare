@@ -178,6 +178,9 @@ func _add_favor_section(breakdown: Dictionary) -> void:
 
 	# Build breakdown line
 	var parts: Array[String] = []
+	var base_val: int = breakdown.get("base", 0)
+	if base_val > 0:
+		parts.append("Base: %d" % base_val)
 	var waves_val: int = breakdown.get("waves", 0)
 	if waves_val > 0:
 		parts.append("Waves: %d" % waves_val)

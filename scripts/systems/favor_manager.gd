@@ -24,6 +24,10 @@ func calculate_favor(result: Dictionary) -> Dictionary:
 	var breakdown: Dictionary = {}
 	var total: int = 0
 
+	# Base participation bonus
+	breakdown["base"] = 5
+	total += 5
+
 	# Waves survived: +1 per wave (max 20)
 	var waves: int = mini(result.get("wave", 0), 20)
 	breakdown["waves"] = waves
@@ -48,9 +52,9 @@ func calculate_favor(result: Dictionary) -> Dictionary:
 		breakdown["mini_boss"] = mini_bonus
 		total += mini_bonus
 
-	# Level reached: +2 per level after level 5
+	# Level reached: +1 per level after level 5
 	var level: int = result.get("level", 1)
-	var level_bonus: int = maxi(0, (level - 5) * 2)
+	var level_bonus: int = maxi(0, level - 5)
 	breakdown["level"] = level_bonus
 	total += level_bonus
 

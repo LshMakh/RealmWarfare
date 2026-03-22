@@ -15,7 +15,7 @@ var mini_boss_kills: int = 0
 
 # Ability charge
 var ability_charge: float = 0.0
-var ability_charge_max: float = 100.0
+var ability_charge_max: float = 200.0
 
 # Stat bonuses (cumulative percentages from generic level-up picks)
 var damage_bonus: float = 0.0   # e.g. 0.05 = +5%

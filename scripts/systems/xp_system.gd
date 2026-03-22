@@ -9,3 +9,5 @@ func _ready() -> void:
 func _on_xp_collected(amount: int) -> void:
 	var boosted: int = roundi(float(amount) * (1.0 + GameState.xp_bonus))
 	GameState.add_xp(boosted)
+	# Charge active ability at 50% of raw XP value
+	GameState.add_ability_charge(float(amount) * 0.5)
