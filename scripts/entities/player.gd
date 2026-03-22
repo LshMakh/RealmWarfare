@@ -34,8 +34,14 @@ func _on_died() -> void:
 
 
 func _on_hit(_hitbox: HitboxComponent) -> void:
-	GameEvents.player_damaged.emit(_hitbox.damage)
+	var damage: int = _hitbox.damage
+	GameEvents.player_damaged.emit(damage)
 	_flash_hit()
+	# Slowmo on big hits (>15% max HP)
+	if damage > 0 and health_component.max_health > 0:
+		var pct: float = float(damage) / float(health_component.max_health)
+		if pct > 0.15 and has_node("/root/JuiceManager"):
+			get_node("/root/JuiceManager").slowmo(100, 0.5)
 
 
 func _flash_hit() -> void:

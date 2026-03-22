@@ -23,6 +23,7 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 
 GameEvents="*res://scripts/autoload/game_events.gd"
 GameState="*res://scripts/autoload/game_state.gd"
+JuiceManager="*res://scripts/systems/juice_manager.gd"
 
 [display]
 

@@ -268,6 +268,11 @@ func _on_damage_received(amount: int) -> void:
 	if now - _last_damage_number_time >= DAMAGE_NUMBER_COOLDOWN:
 		_last_damage_number_time = now
 		_spawn_damage_number(amount)
+	# Apply knockback scaled by damage
+	if _player:
+		var dir: Vector2 = _player.global_position.direction_to(global_position)
+		var force: float = clampf(float(amount) * 1.5, 10.0, 30.0)
+		apply_knockback(dir, force)
 
 
 func _flash_hit() -> void:
@@ -311,12 +316,30 @@ func _on_died() -> void:
 
 func _play_death_effect() -> void:
 	GameEvents.enemy_killed.emit(global_position, data.xp_reward)
+	# Screen shake on death (light)
+	if has_node("/root/JuiceManager"):
+		get_node("/root/JuiceManager").screen_shake(1.5, 0.05)
+	_spawn_death_particles()
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(self, "modulate", Color(1, 1, 1, 0), 0.3)
 	tween.tween_property(self, "scale", Vector2(0.3, 0.3), 0.3).set_ease(Tween.EASE_IN)
 	tween.set_parallel(false)
 	tween.tween_callback(_handle_death)
+
+
+func _spawn_death_particles() -> void:
+	for i: int in 6:
+		var particle: ColorRect = ColorRect.new()
+		particle.size = Vector2(3, 3)
+		particle.color = sprite.modulate if sprite.modulate != Color.WHITE else Color(0.8, 0.3, 0.3)
+		particle.global_position = global_position + Vector2(randf_range(-5, 5), randf_range(-5, 5))
+		get_tree().current_scene.add_child(particle)
+		var dir: Vector2 = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
+		var tween: Tween = particle.create_tween()
+		tween.tween_property(particle, "global_position", particle.global_position + dir * 30.0, 0.3)
+		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.3)
+		tween.tween_callback(particle.queue_free)
 
 
 func _handle_death() -> void:
