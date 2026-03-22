@@ -13,3 +13,4 @@ xp_reward = 1
 sprite_texture = ExtResource("2")
 is_boss = false
 collision_radius = 6.0
+behavior_type = 0

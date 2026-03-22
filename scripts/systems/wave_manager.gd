@@ -26,6 +26,7 @@ var _boss_spawned: bool = false
 func _ready() -> void:
 	_current_interval = initial_spawn_interval
 	GameEvents.enemy_killed.connect(_on_enemy_killed)
+	GameEvents.boss_died.connect(_on_boss_died)
 
 
 func _process(delta: float) -> void:
@@ -76,6 +77,7 @@ func _spawn_boss() -> void:
 		var spawn_pos := _random_spawn_position()
 		boss.global_position = spawn_pos
 		boss.initialize(boss_data, player)
+		GameEvents.boss_spawned.emit(boss)
 
 
 func _enemies_for_current_time() -> int:
@@ -97,3 +99,15 @@ func _on_enemy_killed(pos: Vector2) -> void:
 		var gem: Node = xp_pool.get_instance()
 		if gem and gem.has_method("activate"):
 			gem.activate(pos, 1, player)
+
+
+func _on_boss_died(pos: Vector2) -> void:
+	# Drop 10x XP gems in a burst pattern around the boss death position
+	if not xp_pool or not player:
+		return
+	var boss_xp: int = boss_data.xp_reward if boss_data else 20
+	for i in range(10):
+		var gem: Node = xp_pool.get_instance()
+		if gem and gem.has_method("activate"):
+			var offset := Vector2(cos(i * TAU / 10.0), sin(i * TAU / 10.0)) * 20.0
+			gem.activate(pos + offset, boss_xp, player)

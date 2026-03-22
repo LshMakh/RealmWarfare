@@ -66,9 +66,16 @@ func _create_card(blessing: BlessingData, index: int) -> PanelContainer:
 	vbox.add_theme_constant_override("separation", 6)
 	card.add_child(vbox)
 
+	# Check if this is an upgrade (blessing already active)
+	var is_upgrade: bool = false
+	for b: BlessingData in GameState.active_blessings:
+		if b.blessing_id == blessing.blessing_id and blessing.blessing_id != &"":
+			is_upgrade = true
+			break
+
 	# Blessing name (bold, larger)
 	var name_label := Label.new()
-	name_label.text = blessing.name
+	name_label.text = blessing.name + (" +1" if is_upgrade else "")
 	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3, 1.0))
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -133,7 +140,20 @@ func _create_card(blessing: BlessingData, index: int) -> PanelContainer:
 
 func _on_card_pressed(index: int) -> void:
 	if index < _current_choices.size():
+		_flash_gold()
 		GameEvents.blessing_chosen.emit(_current_choices[index])
+
+
+func _flash_gold() -> void:
+	var flash := ColorRect.new()
+	flash.color = Color(1.0, 0.85, 0.2, 0.3)
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(flash)
+
+	var tween := create_tween()
+	tween.tween_property(flash, "color:a", 0.0, 0.15)
+	tween.tween_callback(flash.queue_free)
 
 
 func _clear_cards() -> void:

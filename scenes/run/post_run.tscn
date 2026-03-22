@@ -1,0 +1,140 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/post_run.gd" id="1"]
+
+[node name="PostRun" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="Overlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.08, 1)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -130.0
+offset_right = 140.0
+offset_bottom = 130.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "RUN OVER"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+
+[node name="Separator" type="HSeparator" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="StatsContainer" type="VBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TimeRow" type="HBoxContainer" parent="Panel/VBox/StatsContainer"]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="Panel/VBox/StatsContainer/TimeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Time"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+
+[node name="TimeValue" type="Label" parent="Panel/VBox/StatsContainer/TimeRow"]
+layout_mode = 2
+text = "0:00"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+
+[node name="KillsRow" type="HBoxContainer" parent="Panel/VBox/StatsContainer"]
+layout_mode = 2
+
+[node name="KillsLabel" type="Label" parent="Panel/VBox/StatsContainer/KillsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Kills"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+
+[node name="KillsValue" type="Label" parent="Panel/VBox/StatsContainer/KillsRow"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+
+[node name="LevelRow" type="HBoxContainer" parent="Panel/VBox/StatsContainer"]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="Panel/VBox/StatsContainer/LevelRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Level"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+
+[node name="LevelValue" type="Label" parent="Panel/VBox/StatsContainer/LevelRow"]
+layout_mode = 2
+text = "1"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+
+[node name="BlessingsRow" type="HBoxContainer" parent="Panel/VBox/StatsContainer"]
+layout_mode = 2
+
+[node name="BlessingsLabel" type="Label" parent="Panel/VBox/StatsContainer/BlessingsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Blessings"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+
+[node name="BlessingsValue" type="Label" parent="Panel/VBox/StatsContainer/BlessingsRow"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+
+[node name="Spacer" type="Control" parent="Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+
+[node name="ButtonContainer" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="RunAgainButton" type="Button" parent="Panel/VBox/ButtonContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+text = "RUN AGAIN"
+
+[node name="MainMenuButton" type="Button" parent="Panel/VBox/ButtonContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+text = "MAIN MENU"
+
+[connection signal="pressed" from="Panel/VBox/ButtonContainer/RunAgainButton" to="." method="_on_run_again_pressed"]
+[connection signal="pressed" from="Panel/VBox/ButtonContainer/MainMenuButton" to="." method="_on_main_menu_pressed"]

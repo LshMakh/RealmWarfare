@@ -4,8 +4,9 @@
 
 [resource]
 script = ExtResource("1")
+blessing_id = &"zeus_lightning_bolt"
 name = "Lightning Bolt"
-description = "Strikes the nearest enemy"
+description = "Hurls a bolt at the nearest foe dealing 10 damage every 0.8s."
 pantheon = "greek"
 tier = 1
 effect_type = 0

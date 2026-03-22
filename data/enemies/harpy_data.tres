@@ -6,10 +6,11 @@
 [resource]
 script = ExtResource("1")
 name = "Harpy"
-max_health = 15
-speed = 70.0
+max_health = 12
+speed = 60.0
 damage = 5
 xp_reward = 1
 sprite_texture = ExtResource("2")
 is_boss = false
 collision_radius = 5.0
+behavior_type = 1

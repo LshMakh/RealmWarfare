@@ -1,6 +1,7 @@
 class_name BlessingData
 extends Resource
 
+@export var blessing_id: StringName = &""
 @export var name: String = ""
 @export var description: String = ""
 @export var icon: Texture2D

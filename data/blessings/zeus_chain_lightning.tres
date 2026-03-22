@@ -4,8 +4,9 @@
 
 [resource]
 script = ExtResource("1")
+blessing_id = &"zeus_chain_lightning"
 name = "Chain Lightning"
-description = "Bolt chains to 3 nearby enemies"
+description = "Fires 3 bolts that arc between foes, each dealing 7 damage every 1.2s."
 pantheon = "greek"
 tier = 1
 effect_type = 0

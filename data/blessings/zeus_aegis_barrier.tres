@@ -4,8 +4,9 @@
 
 [resource]
 script = ExtResource("1")
+blessing_id = &"zeus_aegis_barrier"
 name = "Aegis Barrier"
-description = "Rotating shield that damages nearby enemies"
+description = "An orbiting shield that strikes enemies within 30 units for 5 damage every 0.5s."
 pantheon = "greek"
 tier = 1
 effect_type = 2

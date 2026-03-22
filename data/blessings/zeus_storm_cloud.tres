@@ -4,8 +4,9 @@
 
 [resource]
 script = ExtResource("1")
+blessing_id = &"zeus_storm_cloud"
 name = "Storm Cloud"
-description = "Summons a cloud that rains bolts on an area"
+description = "Summons a storm cloud every 4s that rains lightning for 2s, dealing 6 damage in a 40-unit area."
 pantheon = "greek"
 tier = 1
 effect_type = 1

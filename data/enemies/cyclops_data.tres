@@ -6,10 +6,11 @@
 [resource]
 script = ExtResource("1")
 name = "Cyclops"
-max_health = 60
+max_health = 80
 speed = 25.0
 damage = 20
 xp_reward = 3
 sprite_texture = ExtResource("2")
 is_boss = false
 collision_radius = 10.0
+behavior_type = 2

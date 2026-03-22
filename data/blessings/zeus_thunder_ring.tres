@@ -4,8 +4,9 @@
 
 [resource]
 script = ExtResource("1")
+blessing_id = &"zeus_thunder_ring"
 name = "Thunder Ring"
-description = "Periodic AoE pulse around player"
+description = "Emits a 60-unit shock pulse every 2.5s dealing 8 damage to nearby enemies."
 pantheon = "greek"
 tier = 1
 effect_type = 1

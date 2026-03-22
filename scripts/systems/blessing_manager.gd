@@ -139,7 +139,7 @@ func _on_blessing_chosen(blessing: BlessingData) -> void:
 
 	match blessing.effect_type:
 		BlessingData.EffectType.AURA:
-			if blessing.name == "Storm Cloud":
+			if blessing.blessing_id == &"zeus_storm_cloud":
 				_storm_clouds.append(blessing)
 				_storm_cloud_timers.append(blessing.cooldown * 0.5)  # First one fires sooner
 			else:
@@ -160,12 +160,38 @@ func _on_blessing_chosen(blessing: BlessingData) -> void:
 
 
 func _pick_random_choices() -> Array:
-	var pool: Array = available_blessings.duplicate()
+	# Collect active blessing IDs to filter duplicates
+	var active_ids: Array[StringName] = []
+	for b: BlessingData in _active_blessings:
+		if b.blessing_id != &"":
+			active_ids.append(b.blessing_id)
+
+	# Build fresh pool excluding already-active blessings
+	var pool: Array = []
+	for b: BlessingData in available_blessings:
+		if b.blessing_id not in active_ids:
+			pool.append(b)
+
 	var choices: Array = []
-	for i in range(mini(choices_per_level, pool.size())):
-		var idx: int = randi() % pool.size()
-		choices.append(pool[idx])
-		pool.remove_at(idx)
+	# Draw from unique pool first
+	var unique_pool: Array = pool.duplicate()
+	for i in range(mini(choices_per_level, unique_pool.size())):
+		var idx: int = randi() % unique_pool.size()
+		choices.append(unique_pool[idx])
+		unique_pool.remove_at(idx)
+
+	# If not enough unique choices, fill remaining slots with upgrades
+	if choices.size() < choices_per_level and _active_blessings.size() > 0:
+		var upgrade_pool: Array = []
+		for b: BlessingData in available_blessings:
+			if b.blessing_id in active_ids:
+				upgrade_pool.append(b)
+		upgrade_pool.shuffle()
+		for b: BlessingData in upgrade_pool:
+			if choices.size() >= choices_per_level:
+				break
+			choices.append(b)
+
 	return choices
 
 
