@@ -5,6 +5,11 @@ extends CanvasLayer
 @onready var overlay: ColorRect = $Overlay
 
 var _current_choices: Array = []
+var _blessing_manager: Node = null
+
+
+func set_blessing_manager(bm: Node) -> void:
+	_blessing_manager = bm
 
 
 func _ready() -> void:
@@ -25,6 +30,10 @@ func _ready() -> void:
 
 
 func _on_show(choices: Array) -> void:
+	if choices.is_empty():
+		# All blessings maxed — nothing to offer, auto-dismiss
+		GameEvents.hide_level_up_ui.emit()
+		return
 	_current_choices = choices
 	get_tree().paused = true
 	overlay.visible = true
@@ -66,16 +75,30 @@ func _create_card(blessing: BlessingData, index: int) -> PanelContainer:
 	vbox.add_theme_constant_override("separation", 6)
 	card.add_child(vbox)
 
-	# Check if this is an upgrade (blessing already active)
-	var is_upgrade: bool = false
-	for b: BlessingData in GameState.active_blessings:
-		if b.blessing_id == blessing.blessing_id and blessing.blessing_id != &"":
-			is_upgrade = true
-			break
+	# Determine current level from BlessingManager
+	var current_level: int = 0
+	if _blessing_manager:
+		current_level = _blessing_manager.get_blessing_level(blessing.blessing_id)
+
+	# Build display name and description based on level
+	var name_text: String = blessing.name
+	var desc_text: String = blessing.description
+	var display_level: int = current_level + 1 if current_level > 0 else 1
+
+	if current_level > 0:
+		var next_level: int = mini(current_level + 1, blessing.max_level)
+		name_text = "%s  Lv.%d -> Lv.%d" % [blessing.name, current_level, next_level]
+		var desc_idx: int = next_level - 1
+		if desc_idx < blessing.level_descriptions.size():
+			desc_text = blessing.level_descriptions[desc_idx]
+	else:
+		name_text = "%s  NEW" % blessing.name
+		if blessing.level_descriptions.size() > 0:
+			desc_text = blessing.level_descriptions[0]
 
 	# Blessing name (bold, larger)
 	var name_label := Label.new()
-	name_label.text = blessing.name + (" +1" if is_upgrade else "")
+	name_label.text = name_text
 	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3, 1.0))
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -89,7 +112,7 @@ func _create_card(blessing: BlessingData, index: int) -> PanelContainer:
 
 	# Description
 	var desc_label := Label.new()
-	desc_label.text = blessing.description
+	desc_label.text = desc_text
 	desc_label.add_theme_font_size_override("font_size", 10)
 	desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85, 1.0))
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -106,9 +129,11 @@ func _create_card(blessing: BlessingData, index: int) -> PanelContainer:
 	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(type_label)
 
-	# Stats line
+	# Stats line — show next level's stats
+	var display_damage: int = blessing.get_stat(display_level, "damage", blessing.damage) as int
+	var display_cooldown: float = blessing.get_stat(display_level, "cooldown", blessing.cooldown) as float
 	var stats_label := Label.new()
-	stats_label.text = "DMG: %d  |  CD: %.1fs" % [blessing.damage, blessing.cooldown]
+	stats_label.text = "DMG: %d  |  CD: %.1fs" % [display_damage, display_cooldown]
 	stats_label.add_theme_font_size_override("font_size", 9)
 	stats_label.add_theme_color_override("font_color", Color(0.6, 0.7, 0.9, 1.0))
 	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

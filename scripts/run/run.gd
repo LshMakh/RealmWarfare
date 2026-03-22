@@ -9,6 +9,7 @@ extends Node2D
 @onready var projectile_pool: ObjectPool = $EntityLayer/ProjectilePool
 @onready var xp_pool: ObjectPool = $EntityLayer/XPPool
 @onready var blessing_manager: BlessingManager = $Systems/BlessingManager
+@onready var level_up_ui: CanvasLayer = $UILayer/LevelUpUI
 
 
 func _ready() -> void:
@@ -51,6 +52,10 @@ func _ready() -> void:
 
 	# Wire up auto-attack
 	auto_attack.projectile_pool = projectile_pool
+	auto_attack.set_blessing_manager(blessing_manager)
+
+	# Wire up level-up UI
+	level_up_ui.set_blessing_manager(blessing_manager)
 
 	# Wire up blessing manager
 	blessing_manager.set_player(player)
