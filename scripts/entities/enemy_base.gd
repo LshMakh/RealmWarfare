@@ -201,6 +201,13 @@ func get_player() -> Node2D:
 	return _player
 
 
+func set_projectile_pools(javelin_pool: ObjectPool, boulder_pool: ObjectPool) -> void:
+	if _active_behavior and _active_behavior.has_method("set_javelin_pool"):
+		_active_behavior.set_javelin_pool(javelin_pool)
+	if _active_behavior and _active_behavior.has_method("set_boulder_pool"):
+		_active_behavior.set_boulder_pool(boulder_pool)
+
+
 # --- Behavior wiring ---
 
 func _setup_behavior() -> void:

@@ -8,6 +8,7 @@ var _enemy: EnemyBase
 var _phase: Phase = Phase.APPROACHING
 var _phase_timer: float = 0.0
 var _throw_cooldown: float = 0.0
+var _boulder_pool: ObjectPool = null
 
 const APPROACH_SPEED: float = 25.0
 const THROW_INTERVAL: float = 3.0
@@ -93,9 +94,20 @@ func _do_recovery(delta: float) -> void:
 		_throw_cooldown = THROW_INTERVAL
 
 
+func set_boulder_pool(pool: ObjectPool) -> void:
+	_boulder_pool = pool
+
+
 func _throw_boulder() -> void:
-	# Placeholder for boulder projectile — Task 4b
-	print("[EnemySlamState] Boulder thrown (placeholder)")
+	if not _boulder_pool or not _enemy:
+		return
+	var player: Node2D = _enemy.get_player()
+	if not player:
+		return
+	var dir: Vector2 = _enemy.global_position.direction_to(player.global_position)
+	var boulder: Node = _boulder_pool.get_instance()
+	if boulder and boulder.has_method("initialize"):
+		boulder.initialize(_enemy.global_position, dir, 12)
 
 
 func _set_phase(new_phase: Phase) -> void:

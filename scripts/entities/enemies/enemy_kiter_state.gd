@@ -5,6 +5,7 @@ extends Node
 var _enemy: EnemyBase
 var _javelin_cooldown: float = 0.0
 var _strafe_sign: float = 1.0
+var _javelin_pool: ObjectPool = null
 
 const PREFERRED_DISTANCE: float = 200.0
 const RETREAT_THRESHOLD: float = 150.0
@@ -54,6 +55,21 @@ func physics_update(delta: float) -> void:
 		_javelin_cooldown = JAVELIN_INTERVAL
 
 
+func set_javelin_pool(pool: ObjectPool) -> void:
+	_javelin_pool = pool
+
+
 func _throw_javelins() -> void:
-	# Placeholder for javelin projectile — Task 4b
-	print("[EnemyKiterState] Javelin thrown (placeholder)")
+	if not _javelin_pool or not _enemy:
+		return
+	var player: Node2D = _enemy.get_player()
+	if not player:
+		return
+	var base_dir: Vector2 = _enemy.global_position.direction_to(player.global_position)
+	# 3-spread at 20 degree intervals (-10, 0, +10 degrees)
+	for i in range(-1, 2):
+		var angle_offset: float = deg_to_rad(i * 10.0)
+		var dir: Vector2 = base_dir.rotated(angle_offset)
+		var javelin: Node = _javelin_pool.get_instance()
+		if javelin and javelin.has_method("initialize"):
+			javelin.initialize(_enemy.global_position, dir, _enemy.data.damage)
