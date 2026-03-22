@@ -329,7 +329,8 @@ func _on_died() -> void:
 
 
 func _play_death_effect() -> void:
-	GameEvents.enemy_killed.emit(global_position, data.xp_reward)
+	var xp: int = data.xp_reward if data else 0
+	GameEvents.enemy_killed.emit(global_position, xp)
 	# Screen shake on death (light)
 	if has_node("/root/JuiceManager"):
 		get_node("/root/JuiceManager").screen_shake(1.5, 0.05)
