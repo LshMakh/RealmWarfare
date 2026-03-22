@@ -68,6 +68,7 @@ var _boss_damage_dealt_this_pulse: bool = false
 func _ready() -> void:
 	add_to_group("enemies")
 	health_component.died.connect(_on_died)
+	health_component.damage_received.connect(_on_damage_received)
 	hurtbox.hit.connect(_on_hit)
 	hurtbox.health = health_component
 
@@ -464,9 +465,14 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, radius * 0.6, 0, TAU, 24, Color(1.0, 0.3, 0.2, alpha * 0.5), 5.0)
 
 
-func _on_hit(from_hitbox: HitboxComponent) -> void:
+func _on_hit(_from_hitbox: HitboxComponent) -> void:
+	# Visual feedback handled by _on_damage_received for all damage sources
+	pass
+
+
+func _on_damage_received(amount: int) -> void:
 	_flash_hit()
-	_spawn_damage_number(from_hitbox.damage)
+	_spawn_damage_number(amount)
 
 
 func _flash_hit() -> void:
