@@ -18,7 +18,7 @@ extends Node
 @export var boss_spawn_time: float = 180.0
 
 @export var powerup_scene: PackedScene
-@export var powerup_drop_chance: float = 0.05
+@export var powerup_drop_chance: float = 0.015
 var powerup_data_list: Array = []
 var _entity_layer: Node
 
