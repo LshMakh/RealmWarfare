@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PickupData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/pickups/pickup_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+pickup_id = &"ambrosia"
+name = "Ambrosia"
+description = "Restores 30% of max HP."
+effect_type = 0
+value = 0.3
+color = Color(1.0, 0.84, 0.0, 1.0)
+glow_color = Color(1.0, 0.92, 0.4, 1.0)

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PickupData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/pickups/pickup_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+pickup_id = &"hermes_wings"
+name = "Hermes' Wings"
+description = "Pulls all XP gems toward you for 5 seconds."
+effect_type = 1
+value = 5.0
+color = Color(0.4, 0.7, 1.0, 1.0)
+glow_color = Color(0.6, 0.85, 1.0, 1.0)

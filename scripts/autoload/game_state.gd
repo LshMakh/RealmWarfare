@@ -8,6 +8,7 @@ var kills: int = 0
 var run_time: float = 0.0
 var active_blessings: Array[BlessingData] = []
 var is_run_active: bool = false
+var magnet_active: bool = false
 
 
 func start_new_run() -> void:
@@ -17,6 +18,7 @@ func start_new_run() -> void:
 	kills = 0
 	run_time = 0.0
 	active_blessings.clear()
+	magnet_active = false
 	is_run_active = true
 	GameEvents.run_started.emit()
 

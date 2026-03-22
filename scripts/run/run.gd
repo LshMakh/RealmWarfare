@@ -31,6 +31,13 @@ func _ready() -> void:
 		preload("res://data/enemies/skeleton_data.tres"),
 	]
 	wave_manager.boss_data = preload("res://data/enemies/cerberus_data.tres")
+	wave_manager.powerup_scene = preload("res://scenes/entities/pickups/powerup.tscn")
+	wave_manager.powerup_data_list = [
+		preload("res://data/pickups/ambrosia.tres"),
+		preload("res://data/pickups/hermes_wings.tres"),
+		preload("res://data/pickups/zeus_wrath.tres"),
+	]
+	wave_manager._entity_layer = $EntityLayer
 
 	# Wire up auto-attack
 	auto_attack.projectile_pool = projectile_pool

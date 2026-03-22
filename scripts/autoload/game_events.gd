@@ -19,6 +19,9 @@ signal blessing_chosen(blessing: Resource)
 signal boss_spawned(enemy: Node2D)
 signal boss_died(position: Vector2)
 
+# Pickups
+signal powerup_collected(pickup_data: Resource, position: Vector2)
+
 # UI
 signal show_level_up_ui(choices: Array)
 signal hide_level_up_ui

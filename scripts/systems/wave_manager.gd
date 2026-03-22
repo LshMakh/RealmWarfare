@@ -17,6 +17,11 @@ extends Node
 @export var max_active_enemies: int = 100
 @export var boss_spawn_time: float = 180.0
 
+@export var powerup_scene: PackedScene
+@export var powerup_drop_chance: float = 0.05
+@export var powerup_data_list: Array[PickupData] = []
+var _entity_layer: Node
+
 var _spawn_timer: float = 0.0
 var _run_time: float = 0.0
 var _current_interval: float = 0.0
@@ -95,10 +100,26 @@ func _random_spawn_position() -> Vector2:
 
 func _on_enemy_killed(pos: Vector2) -> void:
 	GameState.kills += 1
+
+	# Chance to spawn a powerup
+	if powerup_scene and powerup_data_list.size() > 0 and randf() < powerup_drop_chance:
+		_spawn_powerup(pos)
+
 	if xp_pool:
 		var gem: Node = xp_pool.get_instance()
 		if gem and gem.has_method("activate"):
 			gem.activate(pos, 1, player)
+
+
+func _spawn_powerup(pos: Vector2) -> void:
+	var pickup: Node = powerup_scene.instantiate()
+	var data: PickupData = powerup_data_list[randi() % powerup_data_list.size()]
+	if _entity_layer:
+		_entity_layer.add_child(pickup)
+	else:
+		add_child(pickup)
+	if pickup.has_method("initialize"):
+		pickup.initialize(data, pos)
 
 
 func _on_boss_died(pos: Vector2) -> void:

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PickupData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/pickups/pickup_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+pickup_id = &"zeus_wrath"
+name = "Zeus' Wrath"
+description = "Damages all visible enemies for 50 damage."
+effect_type = 2
+value = 50.0
+color = Color(1.0, 1.0, 0.8, 1.0)
+glow_color = Color(1.0, 1.0, 0.5, 1.0)

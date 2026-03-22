@@ -30,9 +30,13 @@ func _physics_process(delta: float) -> void:
 	if not _magnet_target:
 		return
 	var dist := global_position.distance_to(_magnet_target.global_position)
-	if dist < 80.0:
+	if GameState.magnet_active or dist < 80.0:
 		var direction := global_position.direction_to(_magnet_target.global_position)
-		var pull_speed := _magnet_speed * (1.0 + (80.0 - dist) / 80.0 * 2.0)
+		var pull_speed: float
+		if GameState.magnet_active:
+			pull_speed = 500.0
+		else:
+			pull_speed = _magnet_speed * (1.0 + (80.0 - dist) / 80.0 * 2.0)
 		global_position += direction * pull_speed * delta
 
 
