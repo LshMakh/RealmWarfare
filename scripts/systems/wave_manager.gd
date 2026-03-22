@@ -85,8 +85,8 @@ func _start_next_wave() -> void:
 
 	# Calculate spawn count and sub-wave batching
 	_total_spawn_count = randi_range(_current_wave_data.spawn_count_min, _current_wave_data.spawn_count_max)
-	_total_spawn_count = mini(_total_spawn_count, max_active_enemies - enemy_pool.active_count())
-	_sub_waves_remaining = _current_wave_data.sub_wave_count
+	_total_spawn_count = maxi(mini(_total_spawn_count, max_active_enemies - enemy_pool.active_count()), 1)
+	_sub_waves_remaining = maxi(_current_wave_data.sub_wave_count, 1)
 	_enemies_per_sub_wave = _total_spawn_count / _sub_waves_remaining
 	_sub_wave_remainder = _total_spawn_count % _sub_waves_remaining
 	_sub_wave_timer = 0.0  # spawn first batch immediately
