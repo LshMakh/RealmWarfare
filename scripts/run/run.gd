@@ -128,6 +128,10 @@ func _ready() -> void:
 	# Connect player death
 	GameEvents.player_died.connect(_on_player_died)
 
+	# Wire debug manager
+	if has_node("/root/DebugManager"):
+		get_node("/root/DebugManager").set_run_references(player, wave_manager, blessing_manager)
+
 
 func _on_player_died() -> void:
 	GameState.end_run()
