@@ -18,12 +18,12 @@ max_level = 5
 level_stats = Array[Dictionary]([{
 "damage": 12, "chains": 0, "cooldown_reduction": 0.1, "sparks": false
 }, {
-"damage": 14, "chains": 1, "cooldown_reduction": 0.2, "sparks": false
+"damage": 14, "chains": 1, "cooldown_reduction": 0.15, "sparks": false
 }, {
-"damage": 16, "chains": 3, "cooldown_reduction": 0.3, "sparks": true, "spark_duration": 0.5, "spark_damage": 5
+"damage": 15, "chains": 2, "cooldown_reduction": 0.2, "sparks": true, "spark_duration": 0.5, "spark_damage": 4
 }, {
-"damage": 18, "chains": 5, "cooldown_reduction": 0.4, "sparks": true, "spark_duration": 1.0, "spark_damage": 5
+"damage": 16, "chains": 3, "cooldown_reduction": 0.25, "sparks": true, "spark_duration": 0.8, "spark_damage": 5
 }, {
-"damage": 22, "chains": 8, "cooldown_reduction": 0.5, "sparks": true, "spark_duration": 1.0, "spark_damage": 8
+"damage": 18, "chains": 5, "cooldown_reduction": 0.3, "sparks": true, "spark_duration": 1.0, "spark_damage": 6
 }])
 level_descriptions = Array[String](["Base lightning bolt", "Chains to 1 nearby enemy", "Chains to 3, leaves ground sparks", "Chains to 5, sparks linger longer", "Fat beam, chains to 8, sparks everywhere"])

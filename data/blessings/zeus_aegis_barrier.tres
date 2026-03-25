@@ -17,12 +17,12 @@ max_level = 5
 level_stats = Array[Dictionary]([{
 "damage": 6, "shields": 2, "rotation_speed": 2.1, "orbit_radius": 45.0, "hit_cooldown": 1.0, "deflect": false, "stun": false, "arcs": false
 }, {
-"damage": 8, "shields": 3, "rotation_speed": 2.5, "orbit_radius": 50.0, "hit_cooldown": 1.0, "deflect": false, "stun": false, "arcs": false
+"damage": 7, "shields": 3, "rotation_speed": 2.3, "orbit_radius": 48.0, "hit_cooldown": 1.0, "deflect": false, "stun": false, "arcs": false
 }, {
-"damage": 10, "shields": 3, "rotation_speed": 2.5, "orbit_radius": 55.0, "hit_cooldown": 0.8, "deflect": true, "stun": false, "arcs": false
+"damage": 8, "shields": 3, "rotation_speed": 2.5, "orbit_radius": 50.0, "hit_cooldown": 0.9, "deflect": true, "stun": false, "arcs": false
 }, {
-"damage": 12, "shields": 4, "rotation_speed": 3.1, "orbit_radius": 55.0, "hit_cooldown": 0.8, "deflect": true, "stun": true, "stun_duration": 0.3, "arcs": false
+"damage": 10, "shields": 4, "rotation_speed": 2.8, "orbit_radius": 52.0, "hit_cooldown": 0.85, "deflect": true, "stun": true, "stun_duration": 0.25, "arcs": false
 }, {
-"damage": 14, "shields": 5, "rotation_speed": 3.1, "orbit_radius": 60.0, "hit_cooldown": 0.6, "deflect": true, "stun": true, "stun_duration": 0.3, "arcs": true
+"damage": 12, "shields": 4, "rotation_speed": 3.0, "orbit_radius": 55.0, "hit_cooldown": 0.75, "deflect": true, "stun": true, "stun_duration": 0.3, "arcs": true
 }])
 level_descriptions = Array[String](["2 orbiting shields", "3 shields, faster rotation", "Shields deflect projectiles", "4 shields, stun enemies on contact", "5 shields with lightning arcs between them"])

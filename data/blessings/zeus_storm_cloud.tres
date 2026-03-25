@@ -18,12 +18,12 @@ max_level = 5
 level_stats = Array[Dictionary]([{
 "damage": 6, "clouds": 1, "radius": 35.0, "duration": 1.5, "cooldown": 3.0, "homing": false
 }, {
-"damage": 7, "clouds": 1, "radius": 45.0, "duration": 2.0, "cooldown": 2.5, "homing": false
+"damage": 7, "clouds": 1, "radius": 40.0, "duration": 1.8, "cooldown": 2.8, "homing": false
 }, {
-"damage": 8, "clouds": 2, "radius": 45.0, "duration": 2.0, "cooldown": 2.5, "homing": false
+"damage": 8, "clouds": 2, "radius": 40.0, "duration": 1.8, "cooldown": 2.8, "homing": false
 }, {
-"damage": 9, "clouds": 2, "radius": 50.0, "duration": 2.5, "cooldown": 2.0, "homing": true
+"damage": 8, "clouds": 2, "radius": 45.0, "duration": 2.0, "cooldown": 2.5, "homing": true
 }, {
-"damage": 11, "clouds": 3, "radius": 55.0, "duration": 3.0, "cooldown": 1.8, "homing": true, "chain_lightning": true
+"damage": 9, "clouds": 2, "radius": 50.0, "duration": 2.5, "cooldown": 2.2, "homing": true, "chain_lightning": true
 }])
 level_descriptions = Array[String](["Stationary cloud with lightning", "Larger cloud, more frequent bolts", "Two simultaneous clouds", "Clouds drift toward nearest enemy", "Three homing clouds, lightning arcs between them"])

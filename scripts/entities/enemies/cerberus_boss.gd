@@ -37,23 +37,23 @@ const FURY_SPEED: float = 40.0
 const INFERNO_SPEED: float = 50.0
 
 const BREATH_RANGE: float = 120.0
-const BREATH_DAMAGE: int = 10
+const BREATH_DAMAGE: int = 15
 const BREATH_TICK_INTERVAL: float = 0.5
 const BREATH_DURATION: float = 2.0
-const BREATH_COOLDOWN: float = 5.0
+const BREATH_COOLDOWN: float = 3.5
 const BREATH_ARC_HUNT: float = deg_to_rad(60.0)
 const BREATH_ARC_FURY: float = deg_to_rad(75.0)
 
 const TELEGRAPH_BREATH_DURATION: float = 1.0
-const TELEGRAPH_CHARGE_DURATION: float = 1.5
+const TELEGRAPH_CHARGE_DURATION: float = 1.0
 const CHARGE_SPEED: float = 200.0
-const CHARGE_DURATION: float = 0.5
+const CHARGE_DURATION: float = 0.7
 
-const SUMMON_INTERVAL: float = 15.0
+const SUMMON_INTERVAL: float = 8.0
 const SUMMON_SKELETON_COUNT: int = 5
 const SUMMON_RADIUS: float = 60.0
 
-const INFERNO_CRACK_INTERVAL: float = 20.0
+const INFERNO_CRACK_INTERVAL: float = 10.0
 const INFERNO_CRACK_COUNT: int = 3
 const INFERNO_CRACK_RADIUS: float = 100.0
 
@@ -68,7 +68,7 @@ func enter() -> void:
 		return
 	_phase = Phase.HUNT
 	_attack = Attack.IDLE
-	_attack_timer = 3.0
+	_attack_timer = 2.0
 	_summon_timer = SUMMON_INTERVAL
 	_inferno_crack_timer = INFERNO_CRACK_INTERVAL
 	# Connect to health changes for phase transitions

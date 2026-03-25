@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 name = "Cerberus"
-max_health = 500
+max_health = 1500
 speed = 35.0
 damage = 25
 xp_reward = 50
