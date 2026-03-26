@@ -8,6 +8,31 @@ var _joystick_direction: Vector2 = Vector2.ZERO
 @onready var hurtbox: HurtboxComponent = $HurtboxComponent
 @onready var sprite: Sprite2D = $Sprite2D
 
+# --- 8-directional sprites & animation ---
+var _dir_textures: Array[Texture2D] = []
+var _run_frames: Array[Array] = []  # _run_frames[dir_index][frame_index]
+var _current_dir: int = 2  # Default: south
+var _anim_frame: int = 0
+var _anim_timer: float = 0.0
+var _is_running: bool = false
+const ANIM_FPS: float = 10.0
+const RUN_FRAME_COUNT: int = 9
+
+const _DIR_NAMES: Array[String] = [
+	"east", "south_east", "south", "south_west",
+	"west", "north_west", "north", "north_east",
+]
+const _DIR_PATHS: Array[String] = [
+	"res://assets/sprites/champions/greek_warrior/east.png",
+	"res://assets/sprites/champions/greek_warrior/south_east.png",
+	"res://assets/sprites/champions/greek_warrior/south.png",
+	"res://assets/sprites/champions/greek_warrior/south_west.png",
+	"res://assets/sprites/champions/greek_warrior/west.png",
+	"res://assets/sprites/champions/greek_warrior/north_west.png",
+	"res://assets/sprites/champions/greek_warrior/north.png",
+	"res://assets/sprites/champions/greek_warrior/north_east.png",
+]
+
 # --- Petrification ---
 var _petrification: float = 0.0
 var _petrify_root_timer: float = 0.0
@@ -27,6 +52,20 @@ func _ready() -> void:
 	health_component.died.connect(_on_died)
 	hurtbox.hit.connect(_on_hit)
 	GameEvents.level_up.connect(_on_level_up)
+	# Preload idle textures
+	_dir_textures.resize(_DIR_PATHS.size())
+	for i: int in _DIR_PATHS.size():
+		_dir_textures[i] = load(_DIR_PATHS[i])
+	# Preload run animation frames
+	_run_frames.resize(_DIR_NAMES.size())
+	for d: int in _DIR_NAMES.size():
+		var frames: Array = []
+		frames.resize(RUN_FRAME_COUNT)
+		for f: int in RUN_FRAME_COUNT:
+			var path: String = "res://assets/sprites/champions/greek_warrior/run/%s/frame_%03d.png" % [_DIR_NAMES[d], f]
+			frames[f] = load(path)
+		_run_frames[d] = frames
+	sprite.texture = _dir_textures[2]  # Default: south (facing down)
 
 
 func _physics_process(delta: float) -> void:
@@ -51,8 +90,11 @@ func _physics_process(delta: float) -> void:
 		input_dir = _joystick_direction
 	velocity = input_dir.normalized() * speed * _get_speed_multiplier()
 	move_and_slide()
-	if velocity.x != 0:
-		sprite.flip_h = velocity.x < 0
+	if input_dir != Vector2.ZERO:
+		_update_direction_index(input_dir)
+		_advance_run_animation(delta)
+	elif _is_running:
+		_stop_run_animation()
 
 	# --- Petrification visual (only when not flashing from a hit) ---
 	if not _is_flash_active():
@@ -61,6 +103,28 @@ func _physics_process(delta: float) -> void:
 
 func set_joystick_direction(direction: Vector2) -> void:
 	_joystick_direction = direction
+
+
+func _update_direction_index(dir: Vector2) -> void:
+	var angle: float = dir.angle()
+	_current_dir = wrapi(roundi(angle / (TAU / 8.0)), 0, 8)
+
+
+func _advance_run_animation(delta: float) -> void:
+	_is_running = true
+	_anim_timer += delta
+	var frame_duration: float = 1.0 / ANIM_FPS
+	if _anim_timer >= frame_duration:
+		_anim_timer -= frame_duration
+		_anim_frame = (_anim_frame + 1) % RUN_FRAME_COUNT
+	sprite.texture = _run_frames[_current_dir][_anim_frame]
+
+
+func _stop_run_animation() -> void:
+	_is_running = false
+	_anim_frame = 0
+	_anim_timer = 0.0
+	sprite.texture = _dir_textures[_current_dir]
 
 
 # --- Petrification ---
