@@ -19,6 +19,9 @@ const SPEED_OPTIONS: Array[float] = [1.0, 2.0, 4.0]
 var _canvas_layer: CanvasLayer = null
 var _label: Label = null
 
+# Cached key labels (input mappings don't change at runtime)
+var _key_labels: Dictionary = {}  # action_name -> display string
+
 
 func _ready() -> void:
 	if not OS.is_debug_build():
@@ -27,6 +30,7 @@ func _ready() -> void:
 		return
 
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_cache_key_labels()
 	_build_overlay()
 
 
@@ -46,6 +50,16 @@ func clear_run_references() -> void:
 
 
 # --- Overlay ---
+
+func _cache_key_labels() -> void:
+	var actions: Array[String] = [
+		"toggle_god_mode", "heal_full", "grant_xp", "skip_wave",
+		"skip_to_boss", "cycle_blessing", "max_blessings", "fill_ability",
+		"grant_favor", "kill_all_enemies", "cycle_speed", "toggle_overlay",
+	]
+	for action: String in actions:
+		_key_labels[action] = InputUtils.get_action_key(action)
+
 
 func _build_overlay() -> void:
 	_canvas_layer = CanvasLayer.new()
@@ -75,7 +89,7 @@ func _build_overlay() -> void:
 
 	_label = Label.new()
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_label.add_theme_font_size_override("font_size", 8)
+	_label.add_theme_font_size_override("font_size", 6)
 	_label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.4, 1.0))
 	panel.add_child(_label)
 
@@ -104,34 +118,35 @@ func _update_overlay() -> void:
 		lines.append("Charge: %.0f/%.0f" % [GameState.ability_charge, GameState.ability_charge_max])
 
 		if _wave_manager:
-			lines.append("")
 			lines.append("Wave: %d  [%s]" % [GameState.current_wave, _wave_state_name()])
 			lines.append("Enemies: %d" % _wave_manager._get_total_active_enemies())
 
 		if _blessing_manager:
 			var ids: Array[StringName] = _blessing_manager.get_active_blessing_ids()
 			if ids.size() > 0:
-				lines.append("")
 				lines.append("Blessings:")
 				for bid: StringName in ids:
 					var level: int = _blessing_manager.get_blessing_level(bid)
 					var short_name: String = str(bid).replace("zeus_", "")
 					lines.append("  %s Lv%d" % [short_name, level])
 
-		lines.append("")
 		lines.append("Favor: %d" % GameState.favor)
 	else:
-		lines.append("")
 		lines.append("Favor: %d" % GameState.favor)
 		lines.append("Not in run")
-
 	lines.append("")
-	lines.append("F1:God F2:Heal F3:+XP")
-	lines.append("F4:SkipWave F5:Boss")
-	lines.append("F6:+Bless F7:MaxBless")
-	lines.append("F8:Charge F9:+Favor")
-	lines.append("F10:KillAll F11:Speed")
-	lines.append("F12:Overlay")
+	lines.append("%s: God" % _key_labels["toggle_god_mode"])
+	lines.append("%s: Heal" % _key_labels["heal_full"])
+	lines.append("%s: +XP" % _key_labels["grant_xp"])
+	lines.append("%s: SkipWave" % _key_labels["skip_wave"])
+	lines.append("%s: Boss" % _key_labels["skip_to_boss"])
+	lines.append("%s: +Bless" % _key_labels["cycle_blessing"])
+	lines.append("%s: MaxBless" % _key_labels["max_blessings"])
+	lines.append("%s: Charge" % _key_labels["fill_ability"])
+	lines.append("%s: +Favor" % _key_labels["grant_favor"])
+	lines.append("%s: KillAll" % _key_labels["kill_all_enemies"])
+	lines.append("%s: Speed" % _key_labels["cycle_speed"])
+	lines.append("%s: Overlay" % _key_labels["toggle_overlay"])
 
 	_label.text = "\n".join(lines)
 
@@ -158,34 +173,31 @@ func _wave_state_name() -> String:
 # --- Input ---
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey or not event.pressed or event.echo:
-		return
 
-	match (event as InputEventKey).keycode:
-		KEY_F1:
-			_toggle_god_mode()
-		KEY_F2:
-			_heal_full()
-		KEY_F3:
-			_grant_xp()
-		KEY_F4:
-			_skip_wave()
-		KEY_F5:
-			_skip_to_boss()
-		KEY_F6:
-			_cycle_blessing()
-		KEY_F7:
-			_max_blessings()
-		KEY_F8:
-			_fill_ability()
-		KEY_F9:
-			_grant_favor()
-		KEY_F10:
-			_kill_all_enemies()
-		KEY_F11:
-			_cycle_speed()
-		KEY_F12:
-			_toggle_overlay()
+	if event.is_action_pressed("toggle_god_mode"):
+		_toggle_god_mode()
+	elif event.is_action_pressed("heal_full"):
+		_heal_full()
+	elif event.is_action_pressed("grant_xp"):
+		_grant_xp()
+	elif event.is_action_pressed("skip_wave"):
+		_skip_wave()
+	elif event.is_action_pressed("skip_to_boss"):
+		_skip_to_boss()
+	elif event.is_action_pressed("cycle_blessing"):
+		_cycle_blessing()
+	elif event.is_action_pressed("max_blessings"):
+		_max_blessings()
+	elif event.is_action_pressed("fill_ability"):
+		_fill_ability()
+	elif event.is_action_pressed("grant_favor"):
+		_grant_favor()
+	elif event.is_action_pressed("kill_all_enemies"):
+		_kill_all_enemies()
+	elif event.is_action_pressed("cycle_speed"):
+		_cycle_speed()
+	elif event.is_action_pressed("toggle_overlay"):
+		_toggle_overlay()
 
 
 # --- Actions ---
