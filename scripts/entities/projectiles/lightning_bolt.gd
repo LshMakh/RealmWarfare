@@ -78,6 +78,7 @@ func _on_area_entered(area: Area2D) -> void:
 			enemy.get_node("HealthComponent").take_damage(GameState.apply_damage_bonus(damage))
 		_spawn_impact_flash(enemy as Node2D)
 		_released = true
+		sprite.hide()
 		set_deferred("monitoring", false)
 		call_deferred("_release")
 

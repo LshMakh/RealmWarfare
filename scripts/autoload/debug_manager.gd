@@ -75,7 +75,7 @@ func _build_overlay() -> void:
 
 	_label = Label.new()
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_label.add_theme_font_size_override("font_size", 8)
+	_label.add_theme_font_size_override("font_size", 6)
 	_label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.4, 1.0))
 	panel.add_child(_label)
 
@@ -104,34 +104,37 @@ func _update_overlay() -> void:
 		lines.append("Charge: %.0f/%.0f" % [GameState.ability_charge, GameState.ability_charge_max])
 
 		if _wave_manager:
-			lines.append("")
 			lines.append("Wave: %d  [%s]" % [GameState.current_wave, _wave_state_name()])
 			lines.append("Enemies: %d" % _wave_manager._get_total_active_enemies())
 
 		if _blessing_manager:
 			var ids: Array[StringName] = _blessing_manager.get_active_blessing_ids()
 			if ids.size() > 0:
-				lines.append("")
 				lines.append("Blessings:")
 				for bid: StringName in ids:
 					var level: int = _blessing_manager.get_blessing_level(bid)
 					var short_name: String = str(bid).replace("zeus_", "")
 					lines.append("  %s Lv%d" % [short_name, level])
 
-		lines.append("")
 		lines.append("Favor: %d" % GameState.favor)
 	else:
-		lines.append("")
 		lines.append("Favor: %d" % GameState.favor)
 		lines.append("Not in run")
 
-	lines.append("")
-	lines.append("F1:God F2:Heal F3:+XP")
-	lines.append("F4:SkipWave F5:Boss")
-	lines.append("F6:+Bless F7:MaxBless")
-	lines.append("F8:Charge F9:+Favor")
-	lines.append("F10:KillAll F11:Speed")
-	lines.append("F12:Overlay")
+	lines.append("%s: God" % [InputUtils.get_action_key("toggle_god_mode")])
+	lines.append("%s: Heal" % [InputUtils.get_action_key("heal_full")])
+	lines.append("%s: +XP" % [InputUtils.get_action_key("grant_xp")])
+	
+	lines.append("%s: SkipWave" % [InputUtils.get_action_key("skip_wave")])
+	lines.append("%s: Boss" % [InputUtils.get_action_key("skip_to_boss")])
+
+	lines.append("%s: +Bless" % [InputUtils.get_action_key("cycle_blessing")])
+	lines.append("%s: MaxBless" % [InputUtils.get_action_key("max_blessings")])
+	lines.append("%s: Charge" % [InputUtils.get_action_key("fill_ability")])
+	lines.append("%s: +Favor" % [InputUtils.get_action_key("grant_favor")])
+	lines.append("%s: KillAll" % [InputUtils.get_action_key("kill_all_enemies")])
+	lines.append("%s: Speed" % [InputUtils.get_action_key("cycle_speed")])
+	lines.append("%s: Overlay" % [InputUtils.get_action_key("toggle_overlay")])
 
 	_label.text = "\n".join(lines)
 
@@ -161,31 +164,30 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 
-	match (event as InputEventKey).keycode:
-		KEY_F1:
-			_toggle_god_mode()
-		KEY_F2:
-			_heal_full()
-		KEY_F3:
-			_grant_xp()
-		KEY_F4:
-			_skip_wave()
-		KEY_F5:
-			_skip_to_boss()
-		KEY_F6:
-			_cycle_blessing()
-		KEY_F7:
-			_max_blessings()
-		KEY_F8:
-			_fill_ability()
-		KEY_F9:
-			_grant_favor()
-		KEY_F10:
-			_kill_all_enemies()
-		KEY_F11:
-			_cycle_speed()
-		KEY_F12:
-			_toggle_overlay()
+	if Input.is_action_pressed("toggle_god_mode"):
+		_toggle_god_mode()
+	elif Input.is_action_pressed("heal_full"):
+		_heal_full()
+	elif Input.is_action_pressed("grant_xp"):
+		_grant_xp()
+	elif Input.is_action_pressed("skip_wave"):
+		_skip_wave()
+	elif Input.is_action_pressed("skip_to_boss"):
+		_skip_to_boss()
+	elif Input.is_action_pressed("cycle_blessing"):
+		_cycle_blessing()
+	elif Input.is_action_pressed("max_blessings"):
+		_max_blessings()
+	elif Input.is_action_pressed("fill_ability"):
+		_fill_ability()
+	elif Input.is_action_pressed("grant_favor"):
+		_grant_favor()
+	elif Input.is_action_pressed("kill_all_enemies"):
+		_kill_all_enemies()
+	elif Input.is_action_pressed("cycle_speed"):
+		_cycle_speed()
+	elif Input.is_action_pressed("toggle_overlay"):
+		_toggle_overlay()
 
 
 # --- Actions ---
