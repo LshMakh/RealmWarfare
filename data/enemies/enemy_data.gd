@@ -9,6 +9,8 @@ enum BehaviorType { SWARM, DIVER, CHARGER, TANK_SLAM, KITER, ZONER, BOSS }
 @export var damage: int = 10
 @export var xp_reward: int = 1
 @export var sprite_texture: Texture2D
+@export var sprite_scale: Vector2 = Vector2.ONE
+@export var flip_default: bool = false
 @export var is_boss: bool = false
 @export var collision_radius: float = 6.0
 @export var behavior_type: BehaviorType = BehaviorType.SWARM

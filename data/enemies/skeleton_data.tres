@@ -1,16 +1,12 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://cose4pgl0ivpo"]
 
-[ext_resource type="Script" path="res://data/enemies/enemy_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/olympus/skeleton.png" id="2"]
+[ext_resource type="Script" uid="uid://d3h86mjj2q1dt" path="res://data/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bb3ueartw136y" path="res://assets/sprites/enemies/olympus/Skeleton.png" id="2_0ong6"]
 
 [resource]
 script = ExtResource("1")
 name = "Skeleton"
 max_health = 15
-speed = 40.0
-damage = 10
-xp_reward = 1
-sprite_texture = ExtResource("2")
-is_boss = false
-collision_radius = 6.0
-behavior_type = 0
+sprite_texture = ExtResource("2_0ong6")
+sprite_scale = Vector2(0.5, 0.5)
+flip_default = true
