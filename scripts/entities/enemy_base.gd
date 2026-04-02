@@ -67,6 +67,8 @@ func initialize(enemy_data: EnemyData, player: Node2D) -> void:
 	scale = Vector2.ONE
 	if data.sprite_texture:
 		sprite.texture = data.sprite_texture
+	sprite.scale = data.sprite_scale
+	sprite.flip_h = data.flip_default
 	# Boss scaling
 	if data.is_boss:
 		scale = Vector2(1.8, 1.8)
@@ -144,9 +146,10 @@ func _physics_process(delta: float) -> void:
 	if _active_behavior and _active_behavior.has_method("physics_update"):
 		_active_behavior.physics_update(delta)
 
-	# Sprite flip
+	# Sprite flip (invert if default is already flipped)
 	if velocity.x != 0:
-		sprite.flip_h = velocity.x < 0
+		var facing_left: bool = velocity.x < 0
+		sprite.flip_h = facing_left if not data.flip_default else not facing_left
 
 	move_and_slide()
 
