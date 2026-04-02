@@ -35,6 +35,7 @@ func reset() -> void:
 	global_position = Vector2.ZERO
 	monitoring = false
 	if sprite:
+		sprite.show()
 		sprite.scale = Vector2.ONE
 		sprite.modulate = Color.WHITE
 
@@ -54,6 +55,7 @@ func activate(pos: Vector2, dir: Vector2, dmg: int) -> void:
 		# Tint toward bright white-blue for higher damage
 		var brightness: float = clampf((damage - 10.0) / 30.0, 0.0, 1.0)
 		sprite.modulate = Color(1.0, 1.0, 1.0, 1.0).lerp(Color(0.7, 0.85, 1.0, 1.0), brightness)
+		sprite.show()
 
 
 func _ready() -> void:
