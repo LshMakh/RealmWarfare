@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bb3ueartw136y"
-path="res://.godot/imported/Skeleton.png-c53292c8c8dca4d84f8b1c8bc352d473.ctex"
+path="res://.godot/imported/skeleton.png-1f6224030e0af657ffa9f7e18e90da97.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/olympus/Skeleton.png"
-dest_files=["res://.godot/imported/Skeleton.png-c53292c8c8dca4d84f8b1c8bc352d473.ctex"]
+source_file="res://assets/sprites/enemies/olympus/skeleton.png"
+dest_files=["res://.godot/imported/skeleton.png-1f6224030e0af657ffa9f7e18e90da97.ctex"]
 
 [params]
 
