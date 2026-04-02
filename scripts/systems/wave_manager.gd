@@ -64,7 +64,8 @@ func _process(delta: float) -> void:
 
 	match _state:
 		WaveState.IDLE:
-			_start_next_wave()
+			if _run_time > 3.0:
+				_start_next_wave()
 		WaveState.SPAWNING:
 			_process_spawning(delta)
 		WaveState.ACTIVE:
